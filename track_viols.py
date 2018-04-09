@@ -140,7 +140,7 @@ class TrackACISViols(object):
             dp.set_ylim(ymin, ymax)
             fn = "%s_%s_%d.png" % (msid, self.year, i)
             dp.savefig(os.path.join("source/_static", fn))
-            viol["plot"] = os.path.join("_static", fn)
+            viol["plot"] = os.path.join("..", "_static", fn)
 
     def make_year_index(self):
 
