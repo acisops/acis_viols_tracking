@@ -1,6 +1,5 @@
 from __future__ import print_function
 import acispy
-from Chandra.cmd_states import fetch_states
 from kadi import events
 import numpy as np
 from Chandra.Time import secs2date
@@ -8,7 +7,7 @@ import jinja2
 import os
 import re
 from datetime import datetime
-from calendar import monthrange
+import glob
 
 limits = {"1dpamzt": 35.5,
           "1deamzt": 35.5,
@@ -39,23 +38,25 @@ class TrackACISViols(object):
         if len(viols) > 0:
             self._make_plots(msid, viols)
 
-        template_path = 'templates'
         if msid == "fptemp_11":
             which = msid+"_"
         else:
             which = ""
-        index_template_file = 'viols_%stemplate.rst' % which
+        viols_template_file = 'viols_%stemplate.rst' % which
 
-        index_template = open(os.path.join(template_path, index_template_file)).read()
-        index_template = re.sub(r' %}\n', ' %}', index_template)
+        viols_template = open(os.path.join('templates', viols_template_file)).read()
+        viols_template = re.sub(r' %}\n', ' %}', viols_template)
 
         context = {"viols": viols,
                    "year": self.year,
                    "msid": msid.upper()}
 
-        outfile = os.path.join("source", "viols_%s_%s.rst" % (msid, self.year))
+        year_dir = os.path.join("source", str(self.year))
+        if not os.path.exists(year_dir):
+            os.mkdir(year_dir)
+        outfile = os.path.join(year_dir, "viols_%s.rst" % msid)
 
-        template = jinja2.Template(index_template)
+        template = jinja2.Template(viols_template)
 
         with open(outfile, "w") as f:
             f.write(template.render(**context))
@@ -141,6 +142,40 @@ class TrackACISViols(object):
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("_static", fn)
 
+    def make_year_index(self):
+
+        index_template = open(os.path.join('templates', 'year_template.rst')).read()
+        index_template = re.sub(r' %}\n', ' %}', index_template)
+
+        context = {"year": self.year}
+
+        year_dir = os.path.join("source", str(self.year))
+        if not os.path.exists(year_dir):
+            os.mkdir(year_dir)
+        outfile = os.path.join(year_dir, "index.rst")
+
+        template = jinja2.Template(index_template)
+
+        with open(outfile, "w") as f:
+            f.write(template.render(**context))
+
+    def make_index(self):
+        index_template = open(os.path.join('templates', 'index_template.rst')).read()
+        index_template = re.sub(r' %}\n', ' %}', index_template)
+
+        years = [year.split("/")[-1] for year in glob.glob("source/20*")]
+        years.sort(reverse=True)
+        context = {"years": years}
+
+        outfile = os.path.join("source", "index.rst")
+
+        template = jinja2.Template(index_template)
+
+        with open(outfile, "w") as f:
+            f.write(template.render(**context))
+
 viols_tracker = TrackACISViols()
 for msid in limits.keys():
     viols_tracker.find_viols(msid)
+    viols_tracker.make_year_index()
+    viols_tracker.make_index()

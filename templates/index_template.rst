@@ -3,18 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to acis_viols_tracking's documentation!
-===============================================
+ACIS Temperature Violations Tracking
+====================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   {% for year in years %}{{year}}/index
+   {% endfor %}
 
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
