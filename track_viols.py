@@ -37,7 +37,11 @@ class TrackACISViols(object):
             viols = self._find_viols(msid)
 
         template_path = 'source/_templates'
-        index_template_file = 'viols_template.rst'
+        if msid == "fptemp_11":
+            which = msid+"_"
+        else:
+            which = ""
+        index_template_file = 'viols_%stemplate.rst' % which
 
         index_template = open(os.path.join(template_path, index_template_file)).read()
         index_template = re.sub(r' %}\n', ' %}', index_template)
@@ -113,7 +117,6 @@ class TrackACISViols(object):
                                        dp.times["msids","fptemp_11"].value <= plot_tend)
             ymax = dp.y["msids","fptemp_11"][plot_idxs].value.max()+1.0
             ymin = dp.y["msids","fptemp_11"][plot_idxs].value.min()-1.0
-            print(ymin, ymax)
             dp.set_ylim(ymin, ymax)
             fn = "fptemp_%s_%d.png" % (self.year, i)
             dp.savefig(os.path.join("source/_static", fn))
