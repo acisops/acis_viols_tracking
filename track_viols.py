@@ -36,7 +36,8 @@ class TrackACISViols(object):
             viols = self._find_fptemp_viols(msid)
         else:
             viols = self._find_viols(msid)
-        self._make_plots(msid, viols)
+        if len(viols) > 0:
+            self._make_plots(msid, viols)
 
         template_path = 'templates'
         if msid == "fptemp_11":
@@ -50,7 +51,7 @@ class TrackACISViols(object):
 
         context = {"viols": viols,
                    "year": self.year,
-                   "msid": msid}
+                   "msid": msid.upper()}
 
         outfile = os.path.join("source", "viols_%s_%s.rst" % (msid, self.year))
 
@@ -64,9 +65,9 @@ class TrackACISViols(object):
         bad = np.concatenate(([False], self.ds[msid].value >= limits[msid], [False]))
         changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
         for change in changes:
-            viol = {'viol_tstart': self.ds[msid].times[change[0]].value,
-                    'viol_tstop': self.ds[msid].times[change[1] - 1].value,
-                    'maxtemp': self.ds[msid][change[0]:change[1]].value.max(),
+            viol = {'viol_tstart': self.ds[msid].times.value[change[0]],
+                    'viol_tstop': self.ds[msid].times.value[change[1] - 1],
+                    'maxtemp': self.ds[msid].value[change[0]:change[1]].max(),
                     'limit': limits[msid]}
             viol["viol_datestart"] = secs2date(viol["viol_tstart"])
             viol["viol_datestop"] = secs2date(viol["viol_tstop"])
@@ -96,7 +97,6 @@ class TrackACISViols(object):
                 bad = np.concatenate(([False], bad, [False]))
                 if np.any(bad):
                     changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
-                    duration = tend_clock-tbegin_clock
                     for change in changes:
                         viol = {"obsid": obsid.obsid,
                                 "limit": limits[msid][instr[0]],
@@ -108,12 +108,13 @@ class TrackACISViols(object):
                                 "time_data": self.ds[msid].times[idxs].value,
                                 "temp_data": self.ds[msid][idxs].value}
                         viol["maxtemp"] = viol["temp_data"][change[0]:change[1]].max()
-                        viol['viol_tstart'] = viol["time_data"][change[0]],
+                        viol['viol_tstart'] = viol["time_data"][change[0]]
                         viol['viol_tstop'] = viol["time_data"][change[1] - 1]
                         viol["viol_datestart"] = secs2date(viol["viol_tstart"])
                         viol["viol_datestop"] = secs2date(viol["viol_tstop"])
                         viol["duration"] = (viol["viol_tstop"]-viol["viol_tstart"])/1000.0
                         viols.append(viol)
+        return viols
 
     def _make_plots(self, msid, viols):
         for i, viol in enumerate(viols):
@@ -126,8 +127,8 @@ class TrackACISViols(object):
                 dp.add_vline(secs2date(viol['tstop']), color='orange')
             else:
                 otime = viol["viol_tstop"]-viol["viol_tstart"]
-                plot_tbegin = viol["viol_tstart"]-0.5*otime
-                plot_tend = viol["viol_tstop"]+0.5*otime
+                plot_tbegin = viol["viol_tstart"]-otime
+                plot_tend = viol["viol_tstop"]+otime
             dp.add_hline(viol['limit'], ls='--')
             dp.set_xlim(secs2date(plot_tbegin), secs2date(plot_tend))
             dp.set_ylabel(r"$\mathrm{Temperature\ (^\circ{C})}$")
@@ -139,7 +140,7 @@ class TrackACISViols(object):
             fn = "%s_%s_%d.png" % (msid, self.year, i)
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("_static", fn)
-        
+
 viols_tracker = TrackACISViols()
 for msid in limits.keys():
     viols_tracker.find_viols(msid)
