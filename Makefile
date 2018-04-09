@@ -14,6 +14,20 @@ help:
 
 .PHONY: help Makefile
 
+.PHONY: all
+all: 
+	python track_viols.py
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) html
+
+.PHONY: all_clean
+all_clean: clean source_clean
+
+.PHONY: source_clean
+source_clean:
+	rm -rf source/_static/*.png
+	rm -rf source/*/*.rst
+	rm -rf source/index.rst
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
