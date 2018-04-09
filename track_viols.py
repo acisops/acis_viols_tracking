@@ -170,6 +170,7 @@ class TrackACISViols(object):
         ax.set_xlim(1, max_doys)
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
+        ax.legend()
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
 
