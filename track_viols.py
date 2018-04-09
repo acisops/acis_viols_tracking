@@ -8,6 +8,7 @@ import os
 import re
 from datetime import datetime
 import glob
+import matplotlib.pyplot as plt
 
 limits = {"1dpamzt": 35.5,
           "1deamzt": 35.5,
@@ -118,7 +119,10 @@ class TrackACISViols(object):
         return viols
 
     def _make_plots(self, msid, viols):
+        doys = []
         for i, viol in enumerate(viols):
+            doys.append(datetime.strptime(viol["viol_datestop"].split(".")[0], 
+                                          "%Y:%j:%H:%M:%S").timetuple().tm_yday)
             dp = acispy.DatePlot(self.ds, msid, figsize=(11, 8))
             if msid == "fptemp_11":
                 otime = viol["tstop"]-viol["tstart"]
@@ -141,6 +145,17 @@ class TrackACISViols(object):
             fn = "%s_%s_%d.png" % (msid, self.year, i)
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("..", "_static", fn)
+        plt.rc("font", size=14)
+        fig = plt.figure(figsize=(6,5))
+        ax = fig.add_subplot(111)
+        print(max(doys))
+        bins = np.linspace(1, max(doys), max(doys)//7)
+        ax.hist(doys, bins=bins, cumulative=True, histtype='step', lw=3)
+        ax.set_xlabel("DOY")
+        ax.set_ylabel("# of violations")
+        ax.set_xlim(1, max(doys))
+        fig.savefig(os.path.join("source", "_static", 
+                                 "hist_%s_%s.png" % (msid, self.year)))
 
     def make_year_index(self):
 
