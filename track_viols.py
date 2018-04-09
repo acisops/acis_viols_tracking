@@ -36,7 +36,7 @@ class TrackACISViols(object):
         else:
             viols = self._find_viols(msid)
 
-        template_path = 'source/_templates'
+        template_path = 'templates'
         if msid == "fptemp_11":
             which = msid+"_"
         else:

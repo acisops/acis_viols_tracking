@@ -1,5 +1,8 @@
+{{year}} Focal Plane Temperature Violations
+-------------------------------------------
+
 ACIS-I -114 :math:`^\circ`C Violations
---------------------------------------
+======================================
 
 =====  =====================  =====================  ==================  ===================
 Obsid  Date start             Date stop              Max temperature     Plot
@@ -13,7 +16,7 @@ Obsid  Date start             Date stop              Max temperature     Plot
 
 
 ACIS-S -112 :math:`^\circ`C Violations
---------------------------------------
+======================================
 
 =====  =====================  =====================  ==================  ===================
 Obsid  Date start             Date stop              Max temperature     Plot
