@@ -1,3 +1,5 @@
 build
-source/viols*.rst
+source/*/viols*.rst
+source/index.rst
+source/*/index.rst
 source/_static/*.png
