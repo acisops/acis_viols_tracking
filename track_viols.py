@@ -9,18 +9,23 @@ import re
 from datetime import datetime
 import glob
 import matplotlib.pyplot as plt
+from collections import defaultdict
 
-limits = {"1dpamzt": 35.5,
-          "1deamzt": 35.5,
-          "1pdeaat": 52.5,
+limits = {"1dpamzt": {"Planning": 35.5,
+                      "Yellow": 37.5},
+          "1deamzt": {"Planning": 35.5,
+                      "Yellow": 37.5},
+          "1pdeaat": {"Planning": 52.5,
+                      "Yellow": 57.0},
           "fptemp_11": {"ACIS-I": -114.0,
                         "ACIS-S": -112.0}
          }
 
 class TrackACISViols(object):
     def __init__(self, end=None):
+        now = datetime.utcnow()
         if end is None:
-            end = datetime.utcnow()
+            end = now
         else:
             end = datetime.strptime(end, "%Y:%j:%H:%M:%S")
         begin = datetime(end.year, 1, 1)
@@ -28,6 +33,7 @@ class TrackACISViols(object):
         datestop = end.strftime("%Y:%j:%H:%M:%S")
         temps = list(limits.keys())
         self.year = end.year
+        self.now = now
         self.ds = acispy.ArchiveData(datestart, datestop, temps, stat="5min")
         self.obsids = events.obsids.filter(start=datestart, stop=datestop)
 
@@ -64,17 +70,19 @@ class TrackACISViols(object):
 
     def _find_viols(self, msid):
         viols = []
-        bad = np.concatenate(([False], self.ds[msid].value >= limits[msid], [False]))
-        changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
-        for change in changes:
-            viol = {'viol_tstart': self.ds[msid].times.value[change[0]],
-                    'viol_tstop': self.ds[msid].times.value[change[1] - 1],
-                    'maxtemp': self.ds[msid].value[change[0]:change[1]].max(),
-                    'limit': limits[msid]}
-            viol["viol_datestart"] = secs2date(viol["viol_tstart"])
-            viol["viol_datestop"] = secs2date(viol["viol_tstop"])
-            viol["duration"] = (viol["viol_tstop"]-viol["viol_tstart"])/1000.0
-            viols.append(viol)
+        for ltype in ["Planning", "Yellow"]:
+            bad = np.concatenate(([False], self.ds[msid].value >= limits[msid][ltype], [False]))
+            changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
+            for change in changes:
+                viol = {'viol_tstart': self.ds[msid].times.value[change[0]],
+                        'viol_tstop': self.ds[msid].times.value[change[1] - 1],
+                        'maxtemp': self.ds[msid].value[change[0]:change[1]].max(),
+                        'limit': limits[msid][ltype],
+                        'type': ltype}
+                viol["viol_datestart"] = secs2date(viol["viol_tstart"])
+                viol["viol_datestop"] = secs2date(viol["viol_tstop"])
+                viol["duration"] = (viol["viol_tstop"]-viol["viol_tstart"])/1000.0
+                viols.append(viol)
         return viols
 
     def _find_fptemp_viols(self, msid):
@@ -106,7 +114,7 @@ class TrackACISViols(object):
                                 "tstop": tend_clock,
                                 "datestart": secs2date(tbegin_clock),
                                 "datestop": secs2date(tend_clock),
-                                "instrument": instr[0],
+                                "type": instr[0],
                                 "time_data": self.ds[msid].times[idxs].value,
                                 "temp_data": self.ds[msid][idxs].value}
                         viol["maxtemp"] = viol["temp_data"][change[0]:change[1]].max()
@@ -119,11 +127,12 @@ class TrackACISViols(object):
         return viols
 
     def _make_plots(self, msid, viols):
-        doys = []
+        doys = defaultdict(list)
         for i, viol in enumerate(viols):
-            doys.append(datetime.strptime(viol["viol_datestop"].split(".")[0], 
-                                          "%Y:%j:%H:%M:%S").timetuple().tm_yday)
+            doy = datetime.strptime(viol["viol_datestop"].split(".")[0],
+                                    "%Y:%j:%H:%M:%S").timetuple().tm_yday
             dp = acispy.DatePlot(self.ds, msid, figsize=(11, 8))
+            doys[viol["type"]].append(doy)
             if msid == "fptemp_11":
                 otime = viol["tstop"]-viol["tstart"]
                 plot_tbegin = viol["tstart"]-0.5*otime
@@ -146,15 +155,22 @@ class TrackACISViols(object):
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("..", "_static", fn)
         plt.rc("font", size=14)
-        fig = plt.figure(figsize=(6,5))
+        fig = plt.figure(figsize=(6, 5))
         ax = fig.add_subplot(111)
-        print(max(doys))
-        bins = np.linspace(1, max(doys), max(doys)//7)
-        ax.hist(doys, bins=bins, cumulative=True, histtype='step', lw=3)
+        if self.year == self.now.year:
+            max_doys = self.now.timetuple().tm_yday
+        else:
+            max_doys = 365
+            if int(self.year) % 4 == 0:
+                max_doys += 1
+        bins = np.linspace(1, max_doys, max_doys // 7)
+        for k in doys:
+            ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
+                    lw=3, label=k)
+        ax.set_xlim(1, max_doys)
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
-        ax.set_xlim(1, max(doys))
-        fig.savefig(os.path.join("source", "_static", 
+        fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
 
     def make_year_index(self):
