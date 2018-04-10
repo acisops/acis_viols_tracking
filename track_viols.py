@@ -211,6 +211,5 @@ class TrackACISViols(object):
 
 viols_tracker = TrackACISViols()
 for msid in limits.keys():
-    viols_tracker.find_viols(msid)
-    viols_tracker.make_year_index()
-    viols_tracker.make_index()
+    viols_tracker.find_viols(msid)viols_tracker.make_year_index()
+viols_tracker.make_index()
