@@ -25,7 +25,7 @@ all_clean: clean source_clean
 .PHONY: source_clean
 source_clean:
 	rm -rf source/_static/*.png
-	rm -rf source/*/*.rst
+	rm -rf source/20*
 	rm -rf source/index.rst
 
 # Catch-all target: route all unknown targets to Sphinx using the new
