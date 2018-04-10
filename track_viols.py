@@ -175,6 +175,7 @@ class TrackACISViols(object):
         ax.legend(loc=2)
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
+        plt.close(fig)
 
     def make_year_index(self):
 
