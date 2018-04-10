@@ -110,6 +110,10 @@ class TrackACISViols(object):
                 if np.any(bad):
                     changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
                     for change in changes:
+                        time_data = self.ds[msid].times[idxs].value
+                        duration = time_data[change[1] - 1] - time_data[change[0]]
+                        if duration < 10.0:
+                            continue
                         viol = {"obsid": obsid.obsid,
                                 "limit": limits[msid][instr[0]],
                                 "tstart": tbegin_clock,
