@@ -91,7 +91,7 @@ class TrackACISViols(object):
         viols = []
         for obsid in self.obsids:
             if obsid.obsid < 38000:
-                when_clocking = ((self.ds["clocking"] == 1) & 
+                when_clocking = ((self.ds["clocking"] == 1) &
                                  (self.ds["tstart"].value >= obsid.tstart) &
                                  (self.ds["tstop"].value <= obsid.tstop))
                 instr = self.ds["instrument"][when_clocking]
@@ -101,7 +101,7 @@ class TrackACISViols(object):
                     print(instr)
                     raise RuntimeError("OOPS!")
                 tbegin_clock = self.ds["tstart"][when_clocking][0].value
-                tend_clock = self.ds["tstart"][when_clocking][-1].value
+                tend_clock = self.ds["tstop"][when_clocking][-1].value
                 temp_times = self.ds[msid].times.value
                 idxs = np.logical_and(temp_times >= tbegin_clock, temp_times <= tend_clock)
                 bad = (self.ds[msid][idxs].value > limits[msid][instr[0]]) & \
@@ -148,8 +148,8 @@ class TrackACISViols(object):
             dp.add_hline(viol['limit'], ls='--')
             dp.set_xlim(secs2date(plot_tbegin), secs2date(plot_tend))
             dp.set_ylabel(r"$\mathrm{Temperature\ (^\circ{C})}$")
-            plot_idxs = np.logical_and(dp.times["msids",msid].value >= plot_tbegin,
-                                       dp.times["msids",msid].value <= plot_tend)
+            plot_idxs = np.logical_and(dp.times["msids", msid].value >= plot_tbegin,
+                                       dp.times["msids", msid].value <= plot_tend)
             ymax = dp.y["msids", msid][plot_idxs].value.max()+1.0
             ymin = dp.y["msids", msid][plot_idxs].value.min()-1.0
             dp.set_ylim(ymin, ymax)
@@ -211,5 +211,6 @@ class TrackACISViols(object):
 
 viols_tracker = TrackACISViols()
 for msid in limits.keys():
-    viols_tracker.find_viols(msid)viols_tracker.make_year_index()
+    viols_tracker.find_viols(msid)
+viols_tracker.make_year_index()
 viols_tracker.make_index()
