@@ -26,6 +26,8 @@ class TrackACISViols(object):
         now = datetime.utcnow()
         if end is None:
             end = now
+        elif isinstance(end, int):
+            end = datetime(end, 12, 31, 23, 59, 59)
         else:
             end = datetime.strptime(end, "%Y:%j:%H:%M:%S")
         begin = datetime(end.year, 1, 1)
