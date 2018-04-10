@@ -213,8 +213,22 @@ class TrackACISViols(object):
         with open(outfile, "w") as f:
             f.write(template.render(**context))
 
-viols_tracker = TrackACISViols()
-for msid in limits.keys():
-    viols_tracker.find_viols(msid)
-viols_tracker.make_year_index()
-viols_tracker.make_index()
+def make_and_run_tracker(end=None):
+    viols_tracker = TrackACISViols(end=end)
+    for msid in limits.keys():
+        viols_tracker.find_viols(msid)
+    viols_tracker.make_year_index()
+    viols_tracker.make_index()
+
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+    parser = ArgumentParser(description='Generate web pages which track ACIS violations.')
+    parser.add_argument("--years", help="A comma-separated list of years to generate "
+                                        "pages for.")
+    args = parser.parse_args()
+    if args.years is None:
+        make_and_run_tracker()
+    else:
+        years = [int(year) for year in args.years.split(",")]
+        for year in years:
+            make_and_run_tracker(end=year)
