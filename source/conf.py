@@ -56,7 +56,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'acis_viols_tracking'
+project = 'ACIS Temperature Violations Tracking'
 copyright = '2018, John ZuHone'
 author = 'John ZuHone'
 
