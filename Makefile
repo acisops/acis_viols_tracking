@@ -14,10 +14,14 @@ help:
 
 .PHONY: help Makefile
 
-.PHONY: all
-all: 
-	python track_viols.py
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) html
+.PHONY: deploy
+deploy: track html
+	rm -rf /proj/web-cxc-dmz/htdocs/acis/acis_viols_tracking
+	cp -rf build/html /proj/web-cxc-dmz/htdocs/acis/acis_viols_tracking
+
+.PHONY: track
+track: 
+	python track_viols.py 2016
 
 .PHONY: all_clean
 all_clean: clean source_clean
