@@ -1,4 +1,8 @@
 from __future__ import print_function
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+plt.ioff()
 import acispy
 from kadi import events
 import numpy as np
@@ -8,7 +12,6 @@ import os
 import re
 from datetime import datetime
 import glob
-import matplotlib.pyplot as plt
 from collections import defaultdict, OrderedDict
 from Ska.Matplotlib import cxctime2plotdate
 from matplotlib.dates import num2date
@@ -177,6 +180,8 @@ class TrackACISViols(object):
             ymin = dp.y["msids", msid][plot_idxs].value.min()-1.0
             dp.set_ylim(ymin, ymax)
             fn = "%s_%s_%d.png" % (msid, self.year, i)
+            if not os.path.exists("source/_static"):
+                os.mkdir("source/_static")
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("..", "_static", fn)
         plt.rc("font", size=14)
