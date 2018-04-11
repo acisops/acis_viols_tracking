@@ -139,12 +139,14 @@ class TrackACISViols(object):
     def _make_plots(self, msid, viols):
         doys = defaultdict(list)
         diffs = defaultdict(list)
+        durations = defaultdict(list)
         for i, viol in enumerate(viols):
             doy = datetime.strptime(viol["viol_datestop"].split(".")[0],
                                     "%Y:%j:%H:%M:%S").timetuple().tm_yday
             dp = acispy.DatePlot(self.ds, msid, figsize=(11, 8))
             doys[viol["type"]].append(doy)
             diffs[viol["type"]].append(viol["maxtemp"]-viol["limit"])
+            durations[viol["type"]].append(viol["duration"])
             if msid == "fptemp_11":
                 otime = viol["tstop"]-viol["tstart"]
                 plot_tbegin = viol["tstart"]-0.5*otime
@@ -167,8 +169,8 @@ class TrackACISViols(object):
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("..", "_static", fn)
         plt.rc("font", size=14)
-        fig = plt.figure(figsize=(12, 5))
-        ax = fig.add_subplot(121)
+        fig = plt.figure(figsize=(15, 5))
+        ax = fig.add_subplot(131)
         if self.year == self.now.year:
             max_doys = self.now.timetuple().tm_yday
         else:
@@ -183,12 +185,18 @@ class TrackACISViols(object):
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
         ax.legend(loc=2)
-        ax2 = fig.add_subplot(122)
+        ax2 = fig.add_subplot(132)
         for k in doys:
             ax2.scatter(doys[k], diffs[k], marker='x')
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
+        ax3 = fig.add_subplot(133)
+        for k in doys:
+            ax3.scatter(doys[k], durations[k], marker='x')
+        ax3.set_xlim(1, max_doys)
+        ax3.set_xlabel("DOY")
+        ax3.set_ylabel("Duration (ks)")
         fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
