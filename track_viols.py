@@ -38,6 +38,7 @@ class TrackACISViols(object):
         datestop = end.strftime("%Y:%j:%H:%M:%S")
         temps = list(limits.keys())
         self.year = end.year
+        print("Tracking violations for the year %s." % self.year)
         self.now = now
         self.ds = acispy.ArchiveData(datestart, datestop, temps, stat="5min")
         self.obsids = events.obsids.filter(start=datestart, stop=datestop)
