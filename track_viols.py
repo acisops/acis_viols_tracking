@@ -245,11 +245,18 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(description='Generate web pages which track ACIS violations.')
     parser.add_argument("--years", help="A comma-separated list of years to generate "
-                                        "pages for.")
+                                        "pages for, or two years separated by dashes "
+                                        "indicating a range of years.")
     args = parser.parse_args()
     if args.years is None:
         make_and_run_tracker()
     else:
-        years = [int(year) for year in args.years.split(",")]
+        if "," in args.years:
+            years = [int(year) for year in args.years.split(",")]
+        elif "-" in args.years: 
+            start, end = np.array(args.years.split("-"), dtype='int')
+            years = range(start, end+1)
+        else:
+            years = [args.years]
         for year in years:
             make_and_run_tracker(end=year)
