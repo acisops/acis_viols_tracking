@@ -169,7 +169,7 @@ class TrackACISViols(object):
             dp.savefig(os.path.join("source/_static", fn))
             viol["plot"] = os.path.join("..", "_static", fn)
         plt.rc("font", size=14)
-        fig = plt.figure(figsize=(15, 5))
+        fig = plt.figure(figsize=(16, 5))
         ax = fig.add_subplot(131)
         if self.year == self.now.year:
             max_doys = self.now.timetuple().tm_yday
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     else:
         if "," in args.years:
             years = [int(year) for year in args.years.split(",")]
-        elif "-" in args.years: 
+        elif "-" in args.years:
             start, end = np.array(args.years.split("-"), dtype='int')
             years = range(start, end+1)
         else:
