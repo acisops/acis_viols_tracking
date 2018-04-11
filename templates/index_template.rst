@@ -10,6 +10,6 @@ ACIS Temperature Violations Tracking
    :maxdepth: 2
 
    {% for year in years %}{{year}}/index
-   {% endfor %}
+   {% endfor %}long_term
 
 

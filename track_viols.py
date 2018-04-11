@@ -2,14 +2,17 @@ from __future__ import print_function
 import acispy
 from kadi import events
 import numpy as np
-from Chandra.Time import secs2date
+from Chandra.Time import secs2date, DateTime
 import jinja2
 import os
 import re
 from datetime import datetime
 import glob
 import matplotlib.pyplot as plt
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+from Ska.Matplotlib import cxctime2plotdate
+from matplotlib.dates import num2date
+import pytz
 
 limits = {"1dpamzt": {"Planning": 35.5,
                       "Yellow": 37.5},
@@ -20,6 +23,8 @@ limits = {"1dpamzt": {"Planning": 35.5,
           "fptemp_11": {"ACIS-I": -114.0,
                         "ACIS-S": -112.0}
          }
+temps = list(limits.keys())
+
 
 class TrackACISViols(object):
     def __init__(self, end=None):
@@ -36,7 +41,6 @@ class TrackACISViols(object):
         begin = datetime(end.year, 1, 1)
         datestart = begin.strftime("%Y:%j:%H:%M:%S")
         datestop = end.strftime("%Y:%j:%H:%M:%S")
-        temps = list(limits.keys())
         self.year = end.year
         print("Tracking violations for the year %s." % self.year)
         self.now = now
@@ -48,8 +52,7 @@ class TrackACISViols(object):
             viols = self._find_fptemp_viols(msid)
         else:
             viols = self._find_viols(msid)
-        if len(viols) > 0:
-            self._make_plots(msid, viols)
+        plot_data = self._make_plots(msid, viols)
 
         if msid == "fptemp_11":
             which = msid+"_"
@@ -73,6 +76,8 @@ class TrackACISViols(object):
 
         with open(outfile, "w") as f:
             f.write(template.render(**context))
+
+        return plot_data
 
     def _find_viols(self, msid):
         viols = []
@@ -144,6 +149,8 @@ class TrackACISViols(object):
         doys = defaultdict(list)
         diffs = defaultdict(list)
         durations = defaultdict(list)
+        if len(viols) == 0:
+            return doys, diffs, durations
         for i, viol in enumerate(viols):
             doy = datetime.strptime(viol["viol_datestop"].split(".")[0],
                                     "%Y:%j:%H:%M:%S").timetuple().tm_yday
@@ -205,6 +212,7 @@ class TrackACISViols(object):
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
         plt.close(fig)
+        return doys, diffs, durations
 
     def make_year_index(self):
 
@@ -239,28 +247,83 @@ class TrackACISViols(object):
             f.write(template.render(**context))
 
 def make_and_run_tracker(end=None):
+    plot_data = {}
     viols_tracker = TrackACISViols(end=end)
-    for msid in limits.keys():
-        viols_tracker.find_viols(msid)
+    for msid in temps:
+        plot_data[msid] = viols_tracker.find_viols(msid)
     viols_tracker.make_year_index()
     viols_tracker.make_index()
+    return plot_data
+
+def make_combined_plots(plot_data):
+    for msid in temps:
+        dates = defaultdict(list)
+        diffs = defaultdict(list)
+        durations = defaultdict(list)
+        for year in plot_data.keys():
+            year_doys = plot_data[year][msid][0]
+            year_diffs = plot_data[year][msid][1]
+            year_durations = plot_data[year][msid][2]
+            for k in year_doys:
+                cxctime = DateTime(["%s:%03d" % (year, doy) for doy in year_doys[k]]).secs
+                dates[k].extend(list(num2date(cxctime2plotdate(cxctime), tz=pytz.utc)))
+                diffs[k].extend(year_diffs[k])
+                durations[k].extend(year_durations[k])
+        plt.rc("font", size=14)
+        fig = plt.figure(figsize=(16, 5))
+        ax = fig.add_subplot(131)
+        for k in dates:
+            ax.hist(dates[k], cumulative=True, histtype='step',
+                    lw=3, label=k)
+        ax.set_xlabel("Date")
+        ax.set_ylabel("# of violations")
+        ax.legend(loc=2)
+        ax2 = fig.add_subplot(132)
+        for k in dates:
+            ax2.scatter(dates[k], diffs[k], marker='x')
+        ax2.set_xlabel("Date")
+        ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
+        ax3 = fig.add_subplot(133)
+        for k in dates:
+            ax3.scatter(dates[k], durations[k], marker='x')
+        ax3.set_xlabel("Date")
+        ax3.set_ylabel("Duration (ks)")
+        fig.autofmt_xdate()
+        fig.subplots_adjust(wspace=0.25)
+        fig.savefig(os.path.join("source", "_static",
+                                 "hist_%s.png" % msid))
+        plt.close(fig)
+
+    lt_template_file = 'long_term_template.rst'
+
+    lt_template = open(os.path.join('templates', lt_template_file)).read()
+    lt_template = re.sub(r' %}\n', ' %}', lt_template)
+
+    context = {"msids": temps}
+
+    outfile = os.path.join("source", "long_term.rst")
+
+    template = jinja2.Template(lt_template)
+
+    with open(outfile, "w") as f:
+        f.write(template.render(**context))
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(description='Generate web pages which track ACIS violations.')
-    parser.add_argument("--years", help="A comma-separated list of years to generate "
-                                        "pages for, or two years separated by dashes "
-                                        "indicating a range of years.")
+    parser.add_argument("start_year", type=int, 
+                        help="The year to begin tracking the violations for.")
+    parser.add_argument("--end_year", type=int, 
+                        help="The year to end tracking the violations for. "
+                             "Default: the current year.")
     args = parser.parse_args()
-    if args.years is None:
-        make_and_run_tracker()
+    plot_data = OrderedDict()
+    if args.end_year is None:
+        end_year = datetime.utcnow().year
     else:
-        if "," in args.years:
-            years = [int(year) for year in args.years.split(",")]
-        elif "-" in args.years:
-            start, end = np.array(args.years.split("-"), dtype='int')
-            years = range(start, end+1)
-        else:
-            years = [args.years]
-        for year in years:
-            make_and_run_tracker(end=year)
+        end_year = args.end_year
+    years = range(args.start_year, end_year+1)
+    for year in years:
+        plot_data[year] = make_and_run_tracker(end=year)
+    make_combined_plots(plot_data)
