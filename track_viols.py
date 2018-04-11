@@ -181,10 +181,11 @@ class TrackACISViols(object):
         ax.legend(loc=2)
         ax2 = fig.add_subplot(122)
         for k in doys:
-            ax2.scatter(doys[k], diffs[k], 'x')
+            ax2.scatter(doys[k], diffs[k], marker='x')
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
+        fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
         plt.close(fig)
