@@ -79,7 +79,11 @@ class TrackACISViols(object):
         for ltype in ["Planning", "Yellow"]:
             bad = np.concatenate(([False], self.ds[msid].value >= limits[msid][ltype], [False]))
             changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
+            time_data = self.ds[msid].times.value
             for change in changes:
+                duration = time_data[change[1] - 1] - time_data[change[0]]
+                if duration < 10.0:
+                    continue
                 viol = {'viol_tstart': self.ds[msid].times.value[change[0]],
                         'viol_tstop': self.ds[msid].times.value[change[1] - 1],
                         'maxtemp': self.ds[msid].value[change[0]:change[1]].max(),
@@ -111,10 +115,10 @@ class TrackACISViols(object):
                 bad = (self.ds[msid][idxs].value > limits[msid][instr[0]]) & \
                      ~(self.ds[msid][idxs].value > -90.0)
                 bad = np.concatenate(([False], bad, [False]))
+                time_data = self.ds[msid].times[idxs].value
                 if np.any(bad):
                     changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
                     for change in changes:
-                        time_data = self.ds[msid].times[idxs].value
                         duration = time_data[change[1] - 1] - time_data[change[0]]
                         if duration < 10.0:
                             continue
