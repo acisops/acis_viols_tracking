@@ -226,8 +226,8 @@ class TrackACISViols(object):
         # Check to see if there are any new violations
         # since the last time we looked
         if self.year == self.now.year:
-            if os.path.exists("last_viol.json"):
-                f = open("last_viol.json", "r")
+            if os.path.exists("last_viols.json"):
+                f = open("last_viols.json", "r")
                 last_known_viols = json.load(f)
                 f.close()
                 for msid in temps:
@@ -251,7 +251,7 @@ class TrackACISViols(object):
                         p.communicate(msg.as_string())
             # Now write the JSON file containing the latest
             # violations
-            fp = open("last_viol.json", 'w')
+            fp = open("last_viols.json", 'w')
             last_known_viols = {}
             for msid in temps:
                 if len(viols[msid]) == 0:
