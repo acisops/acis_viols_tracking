@@ -3,4 +3,5 @@ source/*/viols*.rst
 source/index.rst
 source/*/index.rst
 source/_static/*.png
-long_term.rst
+source/long_term.rst
+last_viols.json
