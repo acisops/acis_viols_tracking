@@ -6,7 +6,7 @@ plt.ioff()
 import acispy
 from kadi import events
 import numpy as np
-from Chandra.Time import secs2date, DateTime
+from Chandra.Time import secs2date, DateTime, date2secs
 import jinja2
 import os
 import re
@@ -16,6 +16,9 @@ from collections import defaultdict, OrderedDict
 from Ska.Matplotlib import cxctime2plotdate
 from matplotlib.dates import num2date
 import pytz
+import json
+from email.mime.text import MIMEText
+from subprocess import Popen, PIPE
 
 limits = {"1dpamzt": {"Planning": 35.5,
                       "Yellow": 37.5},
@@ -80,7 +83,7 @@ class TrackACISViols(object):
         with open(outfile, "w") as f:
             f.write(template.render(**context))
 
-        return plot_data
+        return viols, plot_data
 
     def _find_viols(self, msid):
         viols = []
@@ -219,6 +222,45 @@ class TrackACISViols(object):
         plt.close(fig)
         return doys, diffs, durations
 
+    def check_for_new_viols(self, viols):
+        # Check to see if there are any new violations
+        # since the last time we looked
+        if self.year == self.now.year:
+            if os.path.exists("last_viol.json"):
+                f = open("last_viol.json", "r")
+                last_known_viols = json.load(f)
+                f.close()
+                for msid in temps:
+                    if len(viols[msid]) == 0 or last_known_viols[msid] is None:
+                        continue
+                    old_time = date2secs(last_known_viols[msid])
+                    vtimes = np.array([viol["viol_tstop"] for viol in viols])
+                    vtypes = np.array([viol["type"] for viol in viols])
+                    # Buffer this by ~100 s to avoid spurious
+                    # reports due to roundoff errors
+                    new_viols = vtimes > old_time+100.0
+                    if new_viols.any():
+                        vtypes = tuple(np.char.lower(np.unique(vtypes[new_viols])))
+                        msg = MIMEText("New violations of the %s %s limit(s) " % (msid.upper(),
+                                                                                  repr(vtypes).strip("()")) +
+                                       "have occurred. See http://cxc.cfa.harvard.edu/acis/acis_viols_tracking "
+                                       "for more details.")
+                        msg["To"] = "acisdude@head.cfa.harvard.edu"
+                        msg["Subject"] = "New %s violations" % msid.upper()
+                        p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
+                        p.communicate(msg.as_string())
+            # Now write the JSON file containing the latest
+            # violations
+            fp = open("last_viol.json", 'w')
+            last_known_viols = {}
+            for msid in temps:
+                if len(viols[msid]) == 0:
+                    last_known_viols[msid] = None
+                else:
+                    last_known_viols[msid] = viols[msid][-1]["viol_datestop"] 
+            json.dump(last_known_viols, fp, indent=4)
+            fp.close()
+
     def make_year_index(self):
 
         index_template = open(os.path.join('templates', 'year_template.rst')).read()
@@ -254,9 +296,11 @@ class TrackACISViols(object):
 
 def make_and_run_tracker(end=None):
     plot_data = {}
+    viols = {}
     viols_tracker = TrackACISViols(end=end)
     for msid in temps:
-        plot_data[msid] = viols_tracker.find_viols(msid)
+        viols[msid], plot_data[msid] = viols_tracker.find_viols(msid)
+    viols_tracker.check_for_new_viols(viols)
     viols_tracker.make_year_index()
     viols_tracker.make_index()
     return plot_data
