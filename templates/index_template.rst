@@ -11,5 +11,7 @@ ACIS Temperature Violations Tracking
 
    {% for year in years %}{{year}}/index
    {% endfor %}long_term
+      
+This page was last updated at {{last_update}} UTC.
 
 

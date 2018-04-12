@@ -242,7 +242,8 @@ class TrackACISViols(object):
 
         years = [year.split("/")[-1] for year in glob.glob("source/20*")]
         years.sort(reverse=True)
-        context = {"years": years}
+        context = {"years": years,
+                   "last_update": self.now.strftime("%Y:%j:%H:%M:%S")}
 
         outfile = os.path.join("source", "index.rst")
 
