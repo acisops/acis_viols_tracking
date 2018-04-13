@@ -234,8 +234,8 @@ class TrackACISViols(object):
                     if len(viols[msid]) == 0 or last_known_viols[msid] is None:
                         continue
                     old_time = date2secs(last_known_viols[msid])
-                    vtimes = np.array([viol["viol_tstop"] for viol in viols])
-                    vtypes = np.array([viol["type"] for viol in viols])
+                    vtimes = np.array([viol["viol_tstop"] for viol in viols[msid]])
+                    vtypes = np.array([viol["type"] for viol in viols[msid]])
                     # Buffer this by ~100 s to avoid spurious
                     # reports due to roundoff errors
                     new_viols = vtimes > old_time+100.0
