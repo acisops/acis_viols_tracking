@@ -248,7 +248,7 @@ class TrackACISViols(object):
                         msg["To"] = "acisdude@head.cfa.harvard.edu"
                         msg["Subject"] = "New %s violations" % msid.upper()
                         p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
-                        p.communicate(msg.as_string())
+                        p.communicate(msg.as_bytes())
             # Now write the JSON file containing the latest
             # violations
             fp = open("last_viols.json", 'w')
