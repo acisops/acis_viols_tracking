@@ -28,5 +28,5 @@ Date start             Date stop              Max temperature     Duration (ks) 
 =====================  =====================  ==================  =============  ===================
 
 {% if viols|length > 0 %}
-.. image:: ../_static/hist_{{msid}}_{{year}}.png
+.. image:: ../_static/hist_{{msid.lower()}}_{{year}}.png
 {% endif %}
