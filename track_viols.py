@@ -344,20 +344,6 @@ def make_combined_plots(plot_data):
                                  "hist_%s.png" % msid))
         plt.close(fig)
 
-    lt_template_file = 'long_term_template.rst'
-
-    lt_template = open(os.path.join('templates', lt_template_file)).read()
-    lt_template = re.sub(r' %}\n', ' %}', lt_template)
-
-    context = {"msids": temps}
-
-    outfile = os.path.join("source", "long_term.rst")
-
-    template = jinja2.Template(lt_template)
-
-    with open(outfile, "w") as f:
-        f.write(template.render(**context))
-
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
