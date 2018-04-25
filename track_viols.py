@@ -261,8 +261,9 @@ class TrackACISViols(object):
                                                                                viol["maxtemp"],
                                                                                viol["duration"])
                         email_txt += "-------- --------------------- --------------------- -------- --------\n\n"
-                        email_txt += "See http://cxc.cfa.harvard.edu/acis/acis_viols_tracking " \
-                                     "for more details."
+                        url = "http://cxc.cfa.harvard.edu/acis/acis_viols_tracking/%s/viols_%s.html" % (self.now.year,
+                                                                                                        msid)
+                        email_txt += "Visit %s for more details." % url
                         msg = MIMEText(email_txt)
                         msg["To"] = "acisdude@head.cfa.harvard.edu"
                         msg["Subject"] = "New %s violations" % msid.upper()
