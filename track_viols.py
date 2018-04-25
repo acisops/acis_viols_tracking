@@ -176,6 +176,11 @@ class TrackACISViols(object):
             dp.add_hline(viol['limit'], ls='--')
             dp.set_xlim(secs2date(plot_tbegin), secs2date(plot_tend))
             dp.set_ylabel(r"$\mathrm{Temperature\ (^\circ{C})}$")
+            dp.set_title("Violation start: {}\n"
+                         "Violation stop: {}\n"
+                         "Violation duration: {:.2f} ks".format(viol["viol_datestart"],
+                                                                viol["viol_datestop"],
+                                                                viol["duration"]))
             plot_idxs = np.logical_and(dp.times["msids", msid].value >= plot_tbegin,
                                        dp.times["msids", msid].value <= plot_tend)
             ymax = dp.y["msids", msid][plot_idxs].value.max()+1.0
