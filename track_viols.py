@@ -260,11 +260,11 @@ class TrackACISViols(object):
                                 vtype = viol["type"].upper()
                             else:
                                 vtype = viol["type"].capitalize()
-                            email_txt += "{:8} {:21} {:21} {:8} {:8}\n".format(vtype,
-                                                                               viol["viol_datestart"],
-                                                                               viol["viol_datestop"],
-                                                                               viol["maxtemp"],
-                                                                               viol["duration"])
+                            email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}\n".format(vtype,
+                                                                                   viol["viol_datestart"],
+                                                                                   viol["viol_datestop"],
+                                                                                   viol["maxtemp"],
+                                                                                   viol["duration"])
                         email_txt += "-------- --------------------- --------------------- -------- --------\n\n"
                         url = "http://cxc.cfa.harvard.edu/acis/acis_viols_tracking/%s/viols_%s.html" % (self.now.year,
                                                                                                         msid)
