@@ -1,4 +1,3 @@
-from __future__ import print_function
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -241,10 +240,30 @@ class TrackACISViols(object):
                     new_viols = vtimes > old_time+100.0
                     if new_viols.any():
                         vtypes = tuple(np.char.lower(np.unique(vtypes[new_viols])))
-                        msg = MIMEText("New violations of the %s %s limit(s) " % (msid.upper(),
-                                                                                  repr(vtypes).strip("()")) +
-                                       "have occurred. See http://cxc.cfa.harvard.edu/acis/acis_viols_tracking "
-                                       "for more details.")
+                        vlimits = repr(vtypes).strip("(')")
+                        if 'acis' in vlimits:
+                            vlimits = vlimits.upper()
+                        MSID = msid.upper()
+                        email_txt = "New violations of the {} {} limit(s) " \
+                                    "have occurred.\n\n".format(MSID, vlimits)
+                        email_txt += "Type     Start                 Stop                  Max Temp Duration\n"
+                        email_txt += "-------- --------------------- --------------------- -------- --------\n"
+                        new_viol_idxs = np.where(new_viols)[0]
+                        for idx in new_viol_idxs:
+                            viol = viols[msid][idx]
+                            if viol["type"].startswith("acis"):
+                                vtype = viol["type"].upper()
+                            else:
+                                vtype = viol["type"].capitalize()
+                            email_txt += "{:8} {:21} {:21} {:8} {:8}\n".format(vtype,
+                                                                               viol["viol_datestart"],
+                                                                               viol["viol_datestop"],
+                                                                               viol["maxtemp"],
+                                                                               viol["duration"])
+                        email_txt += "-------- --------------------- --------------------- -------- --------\n\n"
+                        email_txt += "See http://cxc.cfa.harvard.edu/acis/acis_viols_tracking " \
+                                     "for more details."
+                        msg = MIMEText(email_txt)
                         msg["To"] = "acisdude@head.cfa.harvard.edu"
                         msg["Subject"] = "New %s violations" % msid.upper()
                         p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
