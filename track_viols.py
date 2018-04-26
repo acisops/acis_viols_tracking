@@ -1,5 +1,6 @@
 import matplotlib as mpl
 mpl.use('Agg')
+mpl.rcParams.update({'figure.max_open_warning': 0})
 import matplotlib.pyplot as plt
 plt.ioff()
 import acispy
