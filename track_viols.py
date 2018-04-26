@@ -171,9 +171,9 @@ class TrackACISViols(object):
                 dp.add_vline(secs2date(viol['tstop']), color='orange')
                 ymin, ymax = dp.ax.get_ylim()
                 ymid = 0.5*(ymin+ymax)
-                dp.add_text(secs2date(viol['tstart']+0.1*otime), ymid,
+                dp.add_text(secs2date(viol['tstart']+0.05*otime), ymid,
                             'BEGIN CLOCKING', rotation='vertical', color='orange')
-                dp.add_text(secs2date(viol['tstop']+0.1*otime), ymid,
+                dp.add_text(secs2date(viol['tstop']+0.05*otime), ymid,
                             'END CLOCKING', rotation='vertical', color='orange')
             else:
                 otime = viol["viol_tstop"]-viol["viol_tstart"]
