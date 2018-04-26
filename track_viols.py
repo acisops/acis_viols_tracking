@@ -232,7 +232,7 @@ class TrackACISViols(object):
         fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
-        plt.close(fig)
+        plt.close("all")
         return doys, diffs, durations
 
     def check_for_new_viols(self, viols):
@@ -376,7 +376,7 @@ def make_combined_plots(plot_data):
         fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s.png" % msid))
-        plt.close(fig)
+        plt.close("all")
 
 
 if __name__ == "__main__":
