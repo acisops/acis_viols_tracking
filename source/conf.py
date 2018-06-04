@@ -30,6 +30,7 @@ html_theme_options = dict(
     bootswatch_theme = "cosmo",
     navbar_sidebarrel = False,
     globaltoc_depth = 2,
+    nosidebar=True,
 )
 
 # -- General configuration ------------------------------------------------
