@@ -4,3 +4,4 @@ source/index.rst
 source/*/index.rst
 source/_static/*.png
 last_viols.json
+*~
