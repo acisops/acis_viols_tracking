@@ -9,7 +9,7 @@ Date start             Date stop              Max temperature     Duration (ks) 
 =====================  =====================  ==================  =============  =======  ===================
 {% for viol in viols %}
 {% if viol.type == "ACIS-I" %}
-{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}             {{"%2.2f"|format(viol.duration)}}           {{viol.obsid}}        `link <{{viol.plot}}>`_
+{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}             {{"%2.2f"|format(viol.duration)}}           {{viol.obsid}}        `link <{{viol.plot}}>`__
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  =======  ===================
@@ -23,7 +23,7 @@ Date start             Date stop              Max temperature     Duration (ks) 
 =====================  =====================  ==================  =============  =======  ===================
 {% for viol in viols %}
 {% if viol.type == "ACIS-S" %}
-{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}             {{"%2.2f"|format(viol.duration)}}           {{viol.obsid}}        `link <{{viol.plot}}>`_
+{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}             {{"%2.2f"|format(viol.duration)}}           {{viol.obsid}}        `link <{{viol.plot}}>`__
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  =======  ===================

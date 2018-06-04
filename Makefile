@@ -15,7 +15,7 @@ help:
 .PHONY: help Makefile
 
 .PHONY: deploy
-deploy: track html
+deploy: 
 	rm -rf /proj/web-cxc-dmz/htdocs/acis/acis_viols_tracking
 	cp -rf build/html /proj/web-cxc-dmz/htdocs/acis/acis_viols_tracking
 

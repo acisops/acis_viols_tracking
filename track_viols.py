@@ -14,8 +14,7 @@ from datetime import datetime
 import glob
 from collections import defaultdict, OrderedDict
 from Ska.Matplotlib import cxctime2plotdate
-from matplotlib.dates import num2date
-import pytz
+from matplotlib.dates import num2date, DateFormatter
 import json
 from email.mime.text import MIMEText
 from subprocess import Popen, PIPE
@@ -351,7 +350,7 @@ def make_combined_plots(plot_data):
             year_durations = plot_data[year][msid][2]
             for k in year_doys:
                 cxctime = DateTime(["%s:%03d" % (year, doy) for doy in year_doys[k]]).secs
-                dates[k].extend(list(num2date(cxctime2plotdate(cxctime), tz=pytz.utc)))
+                dates[k].extend(list(cxctime2plotdate(cxctime)))
                 diffs[k].extend(year_diffs[k])
                 durations[k].extend(year_durations[k])
         plt.rc("font", size=14)
@@ -363,16 +362,20 @@ def make_combined_plots(plot_data):
         ax.set_xlabel("Date")
         ax.set_ylabel("# of violations")
         ax.legend(loc=2)
+        years_fmt = DateFormatter('%Y-%j')
+        ax.xaxis.set_major_formatter(years_fmt)
         ax2 = fig.add_subplot(132)
         for k in dates:
-            ax2.scatter(dates[k], diffs[k], marker='x')
+            ax2.scatter(num2date(dates[k]), diffs[k], marker='x')
         ax2.set_xlabel("Date")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
+        ax2.xaxis.set_major_formatter(years_fmt)
         ax3 = fig.add_subplot(133)
         for k in dates:
-            ax3.scatter(dates[k], durations[k], marker='x')
+            ax3.scatter(num2date(dates[k]), durations[k], marker='x')
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Duration (ks)")
+        ax3.xaxis.set_major_formatter(years_fmt)
         fig.autofmt_xdate()
         fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",

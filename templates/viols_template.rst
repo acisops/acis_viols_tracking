@@ -9,7 +9,7 @@ Date start             Date stop              Max temperature     Duration (ks) 
 =====================  =====================  ==================  =============  ===================
 {% for viol in viols %}
 {% if viol.type == "Planning" %}
-{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`_
+{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`__
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  ===================
@@ -22,7 +22,7 @@ Date start             Date stop              Max temperature     Duration (ks) 
 =====================  =====================  ==================  =============  ===================
 {% for viol in viols %}
 {% if viol.type == "Yellow" %}
-{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`_
+{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`__
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  ===================
