@@ -223,12 +223,16 @@ class TrackACISViols(object):
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
+        _, ymax = ax2.get_ylim()
+        ax2.set_ylim(0.0, max(1.5, ymax))
         ax3 = fig.add_subplot(133)
         for k in doys:
             ax3.scatter(doys[k], durations[k], marker='x')
         ax3.set_xlim(1, max_doys)
         ax3.set_xlabel("DOY")
         ax3.set_ylabel("Duration (ks)")
+        _, ymax = ax3.get_ylim()
+        ax3.set_ylim(0.0, max(10.0, ymax))
         fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",
                                  "hist_%s_%s.png" % (msid, self.year)))
@@ -373,12 +377,16 @@ def make_combined_plots(plot_data):
         ax2.set_xlabel("Date")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
         ax2.xaxis.set_major_formatter(years_fmt)
+        _, ymax = ax2.get_ylim()
+        ax2.set_ylim(0.0, max(1.5, ymax))
         ax3 = fig.add_subplot(133)
         for k in dates:
             ax3.scatter(num2date(dates[k]), durations[k], marker='x')
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Duration (ks)")
         ax3.xaxis.set_major_formatter(years_fmt)
+        _, ymax = ax3.get_ylim()
+        ax3.set_ylim(0.0, max(10.0, ymax))
         fig.autofmt_xdate()
         fig.subplots_adjust(wspace=0.25)
         fig.savefig(os.path.join("source", "_static",
