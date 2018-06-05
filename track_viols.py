@@ -159,7 +159,7 @@ class TrackACISViols(object):
         for i, viol in enumerate(viols):
             doy = datetime.strptime(viol["viol_datestop"].split(".")[0],
                                     "%Y:%j:%H:%M:%S").timetuple().tm_yday
-            dp = acispy.DatePlot(self.ds, msid, figsize=(11, 8))
+            dp = acispy.DatePlot(self.ds, msid, figsize=(11, 8), field2=("states", "pitch"))
             doys[viol["type"]].append(doy)
             diffs[viol["type"]].append(viol["maxtemp"]-viol["limit"])
             durations[viol["type"]].append(viol["duration"])
