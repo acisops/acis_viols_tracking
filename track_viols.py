@@ -258,8 +258,10 @@ class TrackACISViols(object):
                         if 'acis' in vlimits:
                             vlimits = vlimits.upper()
                         MSID = msid.upper()
-                        email_txt = "New violations of the {} {} limit(s) " \
-                                    "have occurred.\n\n".format(MSID, vlimits)
+                        email_txt = "<html>\n<head></head>\n<body>\n"
+                        email_txt += "New violations of the {} {} limit(s) " \
+                                     "have occurred.\n\n".format(MSID, vlimits)
+                        email_txt += "<font face='Menlo, monospace'>"
                         email_txt += "Type     Start                 Stop                  Max Temp Duration\n"
                         email_txt += "-------- --------------------- --------------------- -------- --------\n"
                         new_viol_idxs = np.where(new_viols)[0]
@@ -274,11 +276,12 @@ class TrackACISViols(object):
                                                                                    viol["viol_datestop"],
                                                                                    viol["maxtemp"],
                                                                                    viol["duration"])
-                        email_txt += "-------- --------------------- --------------------- -------- --------\n\n"
+                        email_txt += "-------- --------------------- --------------------- -------- --------</font>\n\n"
                         url = "http://cxc.cfa.harvard.edu/acis/acis_viols_tracking/%s/viols_%s.html" % (self.now.year,
                                                                                                         msid)
-                        email_txt += "Visit %s for more details." % url
-                        msg = MIMEText(email_txt)
+                        email_txt += "Visit %s for more details.\n" % url
+                        email_txt += "</body>\n</html>"
+                        msg = MIMEText(email_txt, 'html')
                         msg["To"] = "acisdude@head.cfa.harvard.edu"
                         msg["Subject"] = "New %s violations" % msid.upper()
                         p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
