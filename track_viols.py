@@ -335,6 +335,7 @@ class TrackACISViols(object):
         with open(outfile, "w") as f:
             f.write(template.render(**context))
 
+
 def make_and_run_tracker(end=None):
     plot_data = {}
     viols = {}
@@ -345,6 +346,7 @@ def make_and_run_tracker(end=None):
     viols_tracker.make_year_index()
     viols_tracker.make_index()
     return plot_data
+
 
 def make_combined_plots(plot_data):
     for msid in temps:

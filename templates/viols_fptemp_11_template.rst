@@ -28,6 +28,9 @@ Date start             Date stop              Max temperature     Duration (ks) 
 {% endfor %}
 =====================  =====================  ==================  =============  =======  ===================
 
+Violation Trends
+================
+
 {% if viols|length > 0 %}
 .. image:: ../_static/hist_{{msid.lower()}}_{{year}}.png
 {% endif %}
