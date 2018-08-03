@@ -258,16 +258,16 @@ class TrackACISViols(object):
                     new_viols = vtimes > old_time+100.0
                     if new_viols.any():
                         vtypes = tuple(np.char.lower(np.unique(vtypes[new_viols])))
-                        vlimits = repr(vtypes).strip("(')")
+                        vlimits = repr(vtypes).strip("('')")
                         if 'acis' in vlimits:
                             vlimits = vlimits.upper()
                         MSID = msid.upper()
                         email_txt = "<html>\n<head></head>\n<body>\n"
                         email_txt += "New violations of the {} {} limit(s) " \
-                                     "have occurred.\n\n".format(MSID, vlimits)
+                                     "have occurred.<br>\n\n".format(MSID, vlimits)
                         email_txt += "<font face='Menlo, monospace'>"
-                        email_txt += "Type     Start                 Stop                  Max Temp Duration\n"
-                        email_txt += "-------- --------------------- --------------------- -------- --------\n"
+                        email_txt += "Type     Start                 Stop                  Max Temp Duration<br>\n"
+                        email_txt += "-------- --------------------- --------------------- -------- --------<br>\n"
                         new_viol_idxs = np.where(new_viols)[0]
                         for idx in new_viol_idxs:
                             viol = viols[msid][idx]
@@ -275,7 +275,7 @@ class TrackACISViols(object):
                                 vtype = viol["type"].upper()
                             else:
                                 vtype = viol["type"].capitalize()
-                            email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}\n".format(vtype,
+                            email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}<br>\n".format(vtype,
                                                                                    viol["viol_datestart"],
                                                                                    viol["viol_datestop"],
                                                                                    viol["maxtemp"],
@@ -283,7 +283,7 @@ class TrackACISViols(object):
                         email_txt += "-------- --------------------- --------------------- -------- --------</font>\n\n"
                         url = "http://cxc.cfa.harvard.edu/acis/acis_viols_tracking/%s/viols_%s.html" % (self.now.year,
                                                                                                         msid)
-                        email_txt += "Visit %s for more details.\n" % url
+                        email_txt += "<br><br>Visit %s for more details.\n" % url
                         email_txt += "</body>\n</html>"
                         msg = MIMEText(email_txt, 'html')
                         msg["To"] = "acisdude@head.cfa.harvard.edu"
