@@ -19,14 +19,18 @@ import json
 from email.mime.text import MIMEText
 from subprocess import Popen, PIPE
 
-limits = {"1dpamzt": {"Planning": 35.5,
-                      "Yellow": 37.5},
-          "1deamzt": {"Planning": 35.5,
-                      "Yellow": 37.5},
-          "1pdeaat": {"Planning": 52.5,
-                      "Yellow": 57.0},
-          "fptemp_11": {"ACIS-I": -114.0,
-                        "ACIS-S": -112.0}
+limits = {"1dpamzt": [{"start": "2016:001:00:00:00",
+                       "Planning": 35.5,
+                       "Yellow": 37.5}],
+          "1deamzt": [{"start": "2016:001:00:00:00",
+                       "Planning": 35.5,
+                       "Yellow": 37.5}],
+          "1pdeaat": [{"start": "2016:001:00:00:00",
+                       "Planning": 52.5,
+                       "Yellow": 57.0}],
+          "fptemp_11": [{"start": "2016:001:00:00:00",
+                         "ACIS-I": -114.0,
+                         "ACIS-S": -112.0}]
          }
 temps = list(limits.keys())
 
@@ -86,18 +90,23 @@ class TrackACISViols(object):
 
     def _find_viols(self, msid):
         viols = []
+        msid_times = self.ds[msid].times.value
+        msid_vals = self.ds[msid].value
         for ltype in ["Planning", "Yellow"]:
-            bad = np.concatenate(([False], self.ds[msid].value >= limits[msid][ltype], [False]))
+            limit_vals = np.zeros(msid_vals.size)
+            for lim in limits[msid]:
+                lim_start = date2secs(lim["start"])
+                limit_vals[msid_times >= lim_start] = lim[msid][ltype]
+            bad = np.concatenate(([False], msid_vals >= limit_vals, [False]))
             changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
-            time_data = self.ds[msid].times.value
             for change in changes:
-                duration = time_data[change[1] - 1] - time_data[change[0]]
+                duration = msid_times[change[1] - 1] - msid_times[change[0]]
                 if duration < 10.0:
                     continue
-                viol = {'viol_tstart': self.ds[msid].times.value[change[0]],
-                        'viol_tstop': self.ds[msid].times.value[change[1] - 1],
-                        'maxtemp': self.ds[msid].value[change[0]:change[1]].max(),
-                        'limit': limits[msid][ltype],
+                viol = {'viol_tstart': msid_times[change[0]],
+                        'viol_tstop': msid_times[change[1] - 1],
+                        'maxtemp': msid_vals[change[0]:change[1]].max(),
+                        'limit': limit_vals[change[0]],
                         'type': ltype}
                 viol["viol_datestart"] = secs2date(viol["viol_tstart"])
                 viol["viol_datestop"] = secs2date(viol["viol_tstop"])
@@ -107,6 +116,8 @@ class TrackACISViols(object):
 
     def _find_fptemp_viols(self, msid):
         viols = []
+        msid_times = self.ds[msid].times.value
+        msid_vals = self.ds[msid].value
         for obsid in self.obsids:
             if obsid.obsid < 38000:
                 when_clocking = ((self.ds["clocking"] == 1) &
@@ -120,12 +131,15 @@ class TrackACISViols(object):
                     raise RuntimeError("OOPS!")
                 tbegin_clock = self.ds["tstart"][when_clocking][0].value
                 tend_clock = self.ds["tstop"][when_clocking][-1].value
-                temp_times = self.ds[msid].times.value
-                idxs = np.logical_and(temp_times >= tbegin_clock, temp_times <= tend_clock)
-                bad = (self.ds[msid][idxs].value > limits[msid][instr[0]]) & \
-                     ~(self.ds[msid][idxs].value > -90.0)
+                idxs = np.logical_and(msid_times >= tbegin_clock, msid_times <= tend_clock)
+                this_limit = None
+                for lim in limits[msid]:
+                    lim_start = date2secs(lim["start"])
+                    if tbegin_clock >= lim_start:
+                        this_limit = lim[instr[0]]
+                bad = (msid_vals[idxs] > this_limit) & ~(msid_vals[idxs] > -90.0)
                 bad = np.concatenate(([False], bad, [False]))
-                time_data = self.ds[msid].times[idxs].value
+                time_data = msid_times[idxs]
                 if np.any(bad):
                     changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
                     for change in changes:
@@ -140,7 +154,7 @@ class TrackACISViols(object):
                                 "datestop": secs2date(tend_clock),
                                 "type": instr[0],
                                 "time_data": self.ds[msid].times[idxs].value,
-                                "temp_data": self.ds[msid][idxs].value}
+                                "temp_data": msid_vals[idxs]}
                         viol["maxtemp"] = viol["temp_data"][change[0]:change[1]].max()
                         viol['viol_tstart'] = viol["time_data"][change[0]]
                         viol['viol_tstop'] = viol["time_data"][change[1] - 1]
@@ -258,16 +272,16 @@ class TrackACISViols(object):
                     new_viols = vtimes > old_time+100.0
                     if new_viols.any():
                         vtypes = tuple(np.char.lower(np.unique(vtypes[new_viols])))
-                        vlimits = repr(vtypes).strip("(')")
+                        vlimits = repr(vtypes).strip("('')")
                         if 'acis' in vlimits:
                             vlimits = vlimits.upper()
                         MSID = msid.upper()
                         email_txt = "<html>\n<head></head>\n<body>\n"
                         email_txt += "New violations of the {} {} limit(s) " \
-                                     "have occurred.\n\n".format(MSID, vlimits)
+                                     "have occurred.<br>\n\n".format(MSID, vlimits)
                         email_txt += "<font face='Menlo, monospace'>"
-                        email_txt += "Type     Start                 Stop                  Max Temp Duration\n"
-                        email_txt += "-------- --------------------- --------------------- -------- --------\n"
+                        email_txt += "Type     Start                 Stop                  Max Temp Duration<br>\n"
+                        email_txt += "-------- --------------------- --------------------- -------- --------<br>\n"
                         new_viol_idxs = np.where(new_viols)[0]
                         for idx in new_viol_idxs:
                             viol = viols[msid][idx]
@@ -275,7 +289,7 @@ class TrackACISViols(object):
                                 vtype = viol["type"].upper()
                             else:
                                 vtype = viol["type"].capitalize()
-                            email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}\n".format(vtype,
+                            email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}<br>\n".format(vtype,
                                                                                    viol["viol_datestart"],
                                                                                    viol["viol_datestop"],
                                                                                    viol["maxtemp"],
@@ -283,7 +297,7 @@ class TrackACISViols(object):
                         email_txt += "-------- --------------------- --------------------- -------- --------</font>\n\n"
                         url = "http://cxc.cfa.harvard.edu/acis/acis_viols_tracking/%s/viols_%s.html" % (self.now.year,
                                                                                                         msid)
-                        email_txt += "Visit %s for more details.\n" % url
+                        email_txt += "<br><br>Visit %s for more details.\n" % url
                         email_txt += "</body>\n</html>"
                         msg = MIMEText(email_txt, 'html')
                         msg["To"] = "acisdude@head.cfa.harvard.edu"
@@ -335,6 +349,7 @@ class TrackACISViols(object):
         with open(outfile, "w") as f:
             f.write(template.render(**context))
 
+
 def make_and_run_tracker(end=None):
     plot_data = {}
     viols = {}
@@ -345,6 +360,7 @@ def make_and_run_tracker(end=None):
     viols_tracker.make_year_index()
     viols_tracker.make_index()
     return plot_data
+
 
 def make_combined_plots(plot_data):
     for msid in temps:
