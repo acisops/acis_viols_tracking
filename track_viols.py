@@ -232,15 +232,19 @@ class TrackACISViols(object):
                 max_doys += 1
         bins = np.linspace(1, max_doys, max_doys // 7)
         for k in lim_types:
-            ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
-                    lw=3, label=k)
+            if len(doys[k]) == 0:
+                ax.axhline(0.0, label=k)
+            else:
+                ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
+                        lw=3, label=k)
         ax.set_xlim(1, max_doys)
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
         ax.legend(loc=2)
         ax2 = fig.add_subplot(132)
         for k in doys:
-            ax2.scatter(doys[k], diffs[k], marker='x')
+            if len(doys[k]) > 0:
+                ax2.scatter(doys[k], diffs[k], marker='x')
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
@@ -248,7 +252,8 @@ class TrackACISViols(object):
         ax2.set_ylim(0.0, max(1.5, ymax))
         ax3 = fig.add_subplot(133)
         for k in doys:
-            ax3.scatter(doys[k], durations[k], marker='x')
+            if len(doys[k]) > 0:
+                ax3.scatter(doys[k], durations[k], marker='x')
         ax3.set_xlim(1, max_doys)
         ax3.set_xlabel("DOY")
         ax3.set_ylabel("Duration (ks)")
