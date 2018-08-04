@@ -96,7 +96,7 @@ class TrackACISViols(object):
             limit_vals = np.zeros(msid_vals.size)
             for lim in limits[msid]:
                 lim_start = date2secs(lim["start"])
-                limit_vals[msid_times >= lim_start] = lim[msid][ltype]
+                limit_vals[msid_times >= lim_start] = lim[ltype]
             bad = np.concatenate(([False], msid_vals >= limit_vals, [False]))
             changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
             for change in changes:
@@ -147,7 +147,7 @@ class TrackACISViols(object):
                         if duration < 10.0:
                             continue
                         viol = {"obsid": obsid.obsid,
-                                "limit": limits[msid][instr[0]],
+                                "limit": this_limit,
                                 "tstart": tbegin_clock,
                                 "tstop": tend_clock,
                                 "datestart": secs2date(tbegin_clock),
