@@ -58,9 +58,9 @@ class TrackACISViols(object):
 
     def find_viols(self, msid):
         if msid == "fptemp_11":
-            viols = self._find_fptemp_viols(msid)
+            viols, num_viols = self._find_fptemp_viols(msid)
         else:
-            viols = self._find_viols(msid)
+            viols, num_viols = self._find_viols(msid)
         plot_data = self._make_plots(msid, viols)
 
         if msid == "fptemp_11":
@@ -73,6 +73,7 @@ class TrackACISViols(object):
         viols_template = re.sub(r' %}\n', ' %}', viols_template)
 
         context = {"viols": viols,
+                   "num_viols": num_viols,
                    "year": self.year,
                    "msid": msid.upper()}
 
@@ -89,6 +90,7 @@ class TrackACISViols(object):
         return viols, plot_data
 
     def _find_viols(self, msid):
+        num_viols = {"Planning": 0, "Yellow": 0}
         viols = []
         msid_times = self.ds[msid].times.value
         msid_vals = self.ds[msid].value
@@ -112,9 +114,11 @@ class TrackACISViols(object):
                 viol["viol_datestop"] = secs2date(viol["viol_tstop"])
                 viol["duration"] = (viol["viol_tstop"]-viol["viol_tstart"])/1000.0
                 viols.append(viol)
-        return viols
+                num_viols[ltype] += 1
+        return viols, num_viols
 
     def _find_fptemp_viols(self, msid):
+        num_viols = {"ACIS-I": 0, "ACIS-S": 0}
         viols = []
         msid_times = self.ds[msid].times.value
         msid_vals = self.ds[msid].value
@@ -162,7 +166,8 @@ class TrackACISViols(object):
                         viol["viol_datestop"] = secs2date(viol["viol_tstop"])
                         viol["duration"] = (viol["viol_tstop"]-viol["viol_tstart"])/1000.0
                         viols.append(viol)
-        return viols
+                        num_viols[instr[0]] += 1
+        return viols, num_viols
 
     def _make_plots(self, msid, viols):
         lim_types = list(limits[msid][0].keys())
