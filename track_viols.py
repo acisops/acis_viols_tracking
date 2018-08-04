@@ -14,10 +14,18 @@ from datetime import datetime
 import glob
 from collections import defaultdict, OrderedDict
 from Ska.Matplotlib import cxctime2plotdate
-from matplotlib.dates import num2date, DateFormatter
+from matplotlib.dates import num2date, DateFormatter, date2num
 import json
 from email.mime.text import MIMEText
 from subprocess import Popen, PIPE
+
+from acispy.utils import mylog
+mylog.setLevel(40)
+
+colors = {"Planning": "green",
+          "Yellow": "gold",
+          "ACIS-I": "C0",
+          "ACIS-S": "C1"}
 
 limits = {"1dpamzt": [{"start": "2016:001:00:00:00",
                        "Planning": 35.5,
@@ -157,7 +165,7 @@ class TrackACISViols(object):
                                 "datestart": secs2date(tbegin_clock),
                                 "datestop": secs2date(tend_clock),
                                 "type": instr[0],
-                                "time_data": self.ds[msid].times[idxs].value,
+                                "time_data": msid_times[idxs],
                                 "temp_data": msid_vals[idxs]}
                         viol["maxtemp"] = viol["temp_data"][change[0]:change[1]].max()
                         viol['viol_tstart'] = viol["time_data"][change[0]]
@@ -232,11 +240,8 @@ class TrackACISViols(object):
                 max_doys += 1
         bins = np.linspace(1, max_doys, max_doys // 7)
         for k in lim_types:
-            if len(doys[k]) == 0:
-                ax.axhline(0.0, label=k)
-            else:
-                ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
-                        lw=3, label=k)
+            ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
+                    lw=3, label=k, color=colors[k])
         ax.set_xlim(1, max_doys)
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
@@ -244,7 +249,8 @@ class TrackACISViols(object):
         ax2 = fig.add_subplot(132)
         for k in doys:
             if len(doys[k]) > 0:
-                ax2.scatter(doys[k], diffs[k], marker='x')
+                ax2.scatter(doys[k], diffs[k], marker='x',
+                            color=colors[k])
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
@@ -253,7 +259,8 @@ class TrackACISViols(object):
         ax3 = fig.add_subplot(133)
         for k in doys:
             if len(doys[k]) > 0:
-                ax3.scatter(doys[k], durations[k], marker='x')
+                ax3.scatter(doys[k], durations[k], marker='x',
+                            color=colors[k])
         ax3.set_xlim(1, max_doys)
         ax3.set_xlabel("DOY")
         ax3.set_ylabel("Duration (ks)")
@@ -375,43 +382,61 @@ def make_and_run_tracker(end=None):
 
 
 def make_combined_plots(plot_data):
+    dstart = datetime(2016,1,1)
+    dend = datetime.now()
+    dt = dend-dstart
+    nbins = dt.days//7
+    bins = np.linspace(date2num(dstart), date2num(dend), nbins)
     for msid in temps:
         dates = defaultdict(list)
         diffs = defaultdict(list)
         durations = defaultdict(list)
         for year in plot_data.keys():
+            lim_types = list(limits[msid][0].keys())
+            lim_types.remove("start")
             year_doys = plot_data[year][msid][0]
             year_diffs = plot_data[year][msid][1]
             year_durations = plot_data[year][msid][2]
             for k in year_doys:
-                cxctime = DateTime(["%s:%03d" % (year, doy) for doy in year_doys[k]]).secs
-                dates[k].extend(list(cxctime2plotdate(cxctime)))
-                diffs[k].extend(year_diffs[k])
-                durations[k].extend(year_durations[k])
+                if len(year_doys[k]) > 0:
+                    cxctime = DateTime(["%s:%03d" % (year, doy) for doy in year_doys[k]]).secs
+                    dates[k].extend(list(cxctime2plotdate(cxctime)))
+                    diffs[k].extend(year_diffs[k])
+                    durations[k].extend(year_durations[k])
         plt.rc("font", size=14)
         fig = plt.figure(figsize=(16, 5))
         ax = fig.add_subplot(131)
-        for k in dates:
-            ax.hist(dates[k], cumulative=True, histtype='step',
-                    lw=3, label=k)
+        for k in lim_types:
+            ax.hist(dates[k], bins=bins, cumulative=True, histtype='step',
+                    lw=3, label=k, color=colors[k])
+        ax.xaxis_date()
         ax.set_xlabel("Date")
         ax.set_ylabel("# of violations")
         ax.legend(loc=2)
+        ax.set_xlim(dstart, dend)
         years_fmt = DateFormatter('%Y-%j')
         ax.xaxis.set_major_formatter(years_fmt)
         ax2 = fig.add_subplot(132)
-        for k in dates:
-            ax2.scatter(num2date(dates[k]), diffs[k], marker='x')
+        ax2.xaxis_date()
+        for k in lim_types:
+            if len(dates[k]) > 0:
+                ax2.scatter(num2date(dates[k]), diffs[k], marker='x', 
+                            color=colors[k])
         ax2.set_xlabel("Date")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
         ax2.xaxis.set_major_formatter(years_fmt)
+        ax2.set_xlim(dstart, dend)
         _, ymax = ax2.get_ylim()
         ax2.set_ylim(0.0, max(1.5, ymax))
         ax3 = fig.add_subplot(133)
-        for k in dates:
-            ax3.scatter(num2date(dates[k]), durations[k], marker='x')
+        ax3.xaxis_date()
+        for k in lim_types:
+            if len(dates[k]) > 0:
+                ax3.scatter(num2date(dates[k]), durations[k], marker='x', 
+                            color=colors[k])
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Duration (ks)")
+        ax3.set_xlim(dstart, dend)
         ax3.xaxis.set_major_formatter(years_fmt)
         _, ymax = ax3.get_ylim()
         ax3.set_ylim(0.0, max(10.0, ymax))
