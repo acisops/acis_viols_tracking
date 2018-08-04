@@ -165,6 +165,8 @@ class TrackACISViols(object):
         return viols
 
     def _make_plots(self, msid, viols):
+        lim_types = list(limits[msid][0].keys())
+        lim_types.remove("start")
         doys = defaultdict(list)
         diffs = defaultdict(list)
         durations = defaultdict(list)
@@ -224,7 +226,7 @@ class TrackACISViols(object):
             if int(self.year) % 4 == 0:
                 max_doys += 1
         bins = np.linspace(1, max_doys, max_doys // 7)
-        for k in doys:
+        for k in lim_types:
             ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
                     lw=3, label=k)
         ax.set_xlim(1, max_doys)
