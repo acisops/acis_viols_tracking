@@ -38,6 +38,9 @@ limits = {"1dpamzt": [{"start": "2016:001:00:00:00",
                        "Yellow": 57.0}],
           "fptemp_11": [{"start": "2016:001:00:00:00",
                          "ACIS-I": -114.0,
+                         "ACIS-S": -114.0},
+                        {"start": "2016:109:09:43:56",
+                         "ACIS-I": -114.0,
                          "ACIS-S": -112.0}]
          }
 temps = list(limits.keys())
