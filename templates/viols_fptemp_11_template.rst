@@ -4,7 +4,7 @@
 ACIS-I -114 C Violations
 ========================
 
-{% if num_viols.ACIS-I == 0 %}
+{% if num_viols.ACIS_I == 0 %}
 No ACIS-I limit violations during this period. 
 {% else %}
 =====================  =====================  ==================  =============  =======  ===================
@@ -21,7 +21,7 @@ Date start             Date stop              Max temperature     Duration (ks) 
 ACIS-S -112 C Violations
 ========================
 
-{% if num_viols.ACIS-S == 0 %}
+{% if num_viols.ACIS_S == 0 %}
 No ACIS-S limit violations during this period. 
 {% else %}
 =====================  =====================  ==================  =============  =======  ===================

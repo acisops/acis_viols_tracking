@@ -118,7 +118,7 @@ class TrackACISViols(object):
         return viols, num_viols
 
     def _find_fptemp_viols(self, msid):
-        num_viols = {"ACIS-I": 0, "ACIS-S": 0}
+        num_viols = {"ACIS_I": 0, "ACIS_S": 0}
         viols = []
         msid_times = self.ds[msid].times.value
         msid_vals = self.ds[msid].value
@@ -166,7 +166,7 @@ class TrackACISViols(object):
                         viol["viol_datestop"] = secs2date(viol["viol_tstop"])
                         viol["duration"] = (viol["viol_tstop"]-viol["viol_tstart"])/1000.0
                         viols.append(viol)
-                        num_viols[instr[0]] += 1
+                        num_viols[instr[0].replace("-","_")] += 1
         return viols, num_viols
 
     def _make_plots(self, msid, viols):
