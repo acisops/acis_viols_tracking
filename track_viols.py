@@ -18,7 +18,7 @@ from matplotlib.dates import num2date, DateFormatter, date2num
 import json
 from email.mime.text import MIMEText
 from subprocess import Popen, PIPE
-
+import json
 from acispy.utils import mylog
 mylog.setLevel(40)
 
@@ -27,22 +27,9 @@ colors = {"Planning": "green",
           "ACIS-I": "C0",
           "ACIS-S": "C1"}
 
-limits = {"1dpamzt": [{"start": "2016:001:00:00:00",
-                       "Planning": 35.5,
-                       "Yellow": 37.5}],
-          "1deamzt": [{"start": "2016:001:00:00:00",
-                       "Planning": 35.5,
-                       "Yellow": 37.5}],
-          "1pdeaat": [{"start": "2016:001:00:00:00",
-                       "Planning": 52.5,
-                       "Yellow": 57.0}],
-          "fptemp_11": [{"start": "2016:001:00:00:00",
-                         "ACIS-I": -114.0,
-                         "ACIS-S": -114.0},
-                        {"start": "2016:109:09:43:56",
-                         "ACIS-I": -114.0,
-                         "ACIS-S": -112.0}]
-         }
+f = open("limits.json", "r")
+limits = json.load(f)
+f.close()
 temps = list(limits.keys())
 
 
