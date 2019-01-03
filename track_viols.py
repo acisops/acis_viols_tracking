@@ -228,7 +228,11 @@ class TrackACISViols(object):
             max_doys = 365
             if int(self.year) % 4 == 0:
                 max_doys += 1
-        bins = np.linspace(1, max_doys, max(max_doys // 7, max_doys))
+        if max_doys <= 21:
+            nbins = max_doys
+        else:
+            nbins = max_doys // 7
+        bins = np.linspace(1, max_doys, nbins)
         for k in lim_types:
             ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
                     lw=3, label=k, color=colors[k])
