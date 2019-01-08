@@ -195,8 +195,15 @@ class TrackACISViols(object):
                             'END CLOCKING', rotation='vertical', color='orange')
                 dp.add_hline(viol['limit'], ls='-')
             else:
-                dp.add_hline(limits[msid]["Planning"], ls='-', color=colors["Planning"])
-                dp.add_hline(limits[msid]["Yellow"], ls='-', color=colors["Yellow"])
+                plimit = None
+                ylimit = None
+                for lim in limits[msid]:
+                    lim_start = date2secs(lim["start"])
+                    if viol["viol_tstart"] >= lim_start:
+                        plimit = lim["Planning"]
+                        ylimit = lim["Yellow"]
+                dp.add_hline(plimit, ls='-', color=colors["Planning"])
+                dp.add_hline(ylimit, ls='-', color=colors["Yellow"])
                 otime = viol["viol_tstop"]-viol["viol_tstart"]
                 plot_tbegin = viol["viol_tstart"]-otime
                 plot_tend = viol["viol_tstop"]+otime
