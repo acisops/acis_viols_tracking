@@ -15,7 +15,6 @@ import glob
 from collections import defaultdict, OrderedDict
 from Ska.Matplotlib import cxctime2plotdate
 from matplotlib.dates import num2date, DateFormatter, date2num
-import json
 from email.mime.text import MIMEText
 from subprocess import Popen, PIPE
 import json
@@ -194,11 +193,13 @@ class TrackACISViols(object):
                             'BEGIN CLOCKING', rotation='vertical', color='orange')
                 dp.add_text(secs2date(viol['tstop']+0.05*otime), ymid,
                             'END CLOCKING', rotation='vertical', color='orange')
+                dp.add_hline(viol['limit'], ls='-')
             else:
+                dp.add_hline(limits[msid]["Planning"], ls='-', color=colors["Planning"])
+                dp.add_hline(limits[msid]["Yellow"], ls='-', color=colors["Yellow"])
                 otime = viol["viol_tstop"]-viol["viol_tstart"]
                 plot_tbegin = viol["viol_tstart"]-otime
                 plot_tend = viol["viol_tstop"]+otime
-            dp.add_hline(viol['limit'], ls='--')
             dp.set_xlim(secs2date(plot_tbegin), secs2date(plot_tend))
             dp.set_ylabel(r"$\mathrm{Temperature\ (^\circ{C})}$")
             title = "Violation start: {}\n" \
