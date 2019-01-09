@@ -21,3 +21,17 @@ FPTEMP_11 Violations
 
 .. image:: _static/hist_fptemp_11.png
 
+TMP_FEP1_MONG Violations
+========================
+
+.. image:: _static/hist_tmp_fep1_mong.png
+
+TMP_FEP1_ACTEL Violations
+=========================
+
+.. image:: _static/hist_tmp_fep1_actel.png
+
+TMP_BEP_PCB Violations
+======================
+
+.. image:: _static/hist_tmp_bep_pcb.png

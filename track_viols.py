@@ -21,10 +21,19 @@ import json
 from acispy.utils import mylog
 mylog.setLevel(40)
 
-colors = {"Planning": "green",
-          "Yellow": "gold",
+colors = {"Planning_hi": "green",
+          "Yellow_hi": "gold",
+          "Planning_lo": "green",
+          "Yellow_lo": "gold",
           "ACIS-I": "C0",
           "ACIS-S": "C1"}
+
+labels = {"Planning_hi": "Planning High",
+          "Planning_lo": "Planning Low",
+          "Yellow_hi": "Yellow High",
+          "Yellow_lo": "Yellow Low",
+          "ACIS-I": "ACIS-I",
+          "ACIS-S": "ACIS-S"}
 
 f = open("limits.json", "r")
 limits = json.load(f)
@@ -62,11 +71,9 @@ class TrackACISViols(object):
 
         if msid == "fptemp_11":
             which = msid+"_"
-            hilo = ""
         else:
             which = ""
-            hilo = list(num_viols.keys())[0][-2:]
-        viols_template_file = 'viols_%s%stemplate.rst' % (hilo, which)
+        viols_template_file = 'viols_%stemplate.rst' % which
 
         viols_template = open(os.path.join('templates', viols_template_file)).read()
         viols_template = re.sub(r' %}\n', ' %}', viols_template)
@@ -89,12 +96,13 @@ class TrackACISViols(object):
         return viols, plot_data
 
     def _find_viols(self, msid):
-        limit_types = list(limits[msid][0])
+        lim_types = list(limits[msid][0])
+        lim_types.remove("start")
         num_viols = defaultdict(int)
         viols = []
         msid_times = self.ds[msid].times.value
         msid_vals = self.ds[msid].value
-        for ltype in limit_types:
+        for ltype in lim_types:
             limit_vals = np.zeros(msid_vals.size)
             for lim in limits[msid]:
                 lim_start = date2secs(lim["start"])
@@ -261,12 +269,8 @@ class TrackACISViols(object):
             nbins = max_doys // 7
         bins = np.linspace(1, max_doys, nbins)
         for key in lim_types:
-            if msid == "fptemp_11":
-                k = key
-            else:
-                k = key[-3:]
             ax.hist(doys[key], bins=bins, cumulative=True, histtype='step',
-                    lw=3, label=k, color=colors[k])
+                    lw=3, label=labels[key], color=colors[key])
         ax.set_xlim(1, max_doys)
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
@@ -274,12 +278,8 @@ class TrackACISViols(object):
         ax2 = fig.add_subplot(132)
         for key in doys:
             if len(doys[key]) > 0:
-                if msid == "fptemp_11":
-                    k = key
-                else:
-                    k = key[-3:]
                 ax2.scatter(doys[key], diffs[key], marker='x',
-                            color=colors[k])
+                            color=colors[key])
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
@@ -288,12 +288,8 @@ class TrackACISViols(object):
         ax3 = fig.add_subplot(133)
         for key in doys:
             if len(doys[key]) > 0:
-                if msid == "fptemp_11":
-                    k = key
-                else:
-                    k = key[-3:]
                 ax3.scatter(doys[key], durations[key], marker='x',
-                            color=colors[k])
+                            color=colors[key])
         ax3.set_xlim(1, max_doys)
         ax3.set_xlabel("DOY")
         ax3.set_ylabel("Duration (ks)")
@@ -444,29 +440,23 @@ def make_combined_plots(plot_data):
         fig = plt.figure(figsize=(16, 5))
         ax = fig.add_subplot(131)
         for key in lim_types:
-            if msid == "fptemp_11":
-                k = key
-            else:
-                k = key[-3:]
             ax.hist(dates[key], bins=bins, cumulative=True, histtype='step',
-                    lw=3, label=k, color=colors[k])
+                    lw=3, label=labels[key], color=colors[key])
         ax.xaxis_date()
         ax.set_xlabel("Date")
         ax.set_ylabel("# of violations")
         ax.legend(loc=2)
         ax.set_xlim(dstart, dend)
+        _, ymax = ax.get_ylim()
+        ax.set_ylim(0.0, max(1.1, ymax))
         years_fmt = DateFormatter('%Y-%j')
         ax.xaxis.set_major_formatter(years_fmt)
         ax2 = fig.add_subplot(132)
         ax2.xaxis_date()
         for key in lim_types:
             if len(dates[key]) > 0:
-                if msid == "fptemp_11":
-                    k = key
-                else:
-                    k = key[-3:]
                 ax2.scatter(num2date(dates[key]), diffs[key], marker='x',
-                            color=colors[k])
+                            color=colors[key])
         ax2.set_xlabel("Date")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
         ax2.xaxis.set_major_formatter(years_fmt)
@@ -480,9 +470,9 @@ def make_combined_plots(plot_data):
                 if msid == "fptemp_11":
                     k = key
                 else:
-                    k = key[-3:]
+                    k = key[:-3]
                 ax3.scatter(num2date(dates[key]), durations[key], marker='x',
-                            color=colors[k])
+                            color=colors[key])
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Duration (ks)")
         ax3.set_xlim(dstart, dend)
