@@ -117,7 +117,8 @@ class TrackACISViols(object):
                 redkey = "maxtemp"
             else:
                 raise RuntimeError("Invalid limit type!")
-            bad = np.concatenate(([False], op(msid_vals, limit_vals), [False]))
+            with np.errstate(invalid='ignore'):
+                bad = np.concatenate(([False], op(msid_vals, limit_vals), [False]))
             changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
             for change in changes:
                 duration = msid_times[change[1] - 1] - msid_times[change[0]]
