@@ -4,15 +4,15 @@
 {{msid}} Planning Limit Violations
 ==================================
 
-{% if num_viols.Planning == 0 %}
+{% if num_viols.Planning_lo == 0 %}
 No planning limit violations during this period. 
 {% else %}
 =====================  =====================  ==================  =============  ===================
 Date start             Date stop              Max temperature     Duration (ks)  Plot
 =====================  =====================  ==================  =============  ===================
 {% for viol in viols %}
-{% if viol.type == "Planning" %}
-{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`__
+{% if viol.type == "Planning_lo" %}
+{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.mintemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`__
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  ===================
@@ -21,15 +21,15 @@ Date start             Date stop              Max temperature     Duration (ks) 
 {{msid}} Yellow Limit Violations
 ================================
 
-{% if num_viols.Yellow == 0 %}
+{% if num_viols.Yellow_lo == 0 %}
 No yellow limit violations during this period. 
 {% else %}
 =====================  =====================  ==================  =============  ===================
 Date start             Date stop              Max temperature     Duration (ks)  Plot
 =====================  =====================  ==================  =============  ===================
 {% for viol in viols %}
-{% if viol.type == "Yellow" %}
-{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.maxtemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`__
+{% if viol.type == "Yellow_lo" %}
+{{viol.viol_datestart}}  {{viol.viol_datestop}}  {{"%.2f"|format(viol.mintemp)}}               {{"%.2f"|format(viol.duration)}}           `link <{{viol.plot}}>`__
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  ===================

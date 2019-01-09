@@ -62,9 +62,11 @@ class TrackACISViols(object):
 
         if msid == "fptemp_11":
             which = msid+"_"
+            hilo = ""
         else:
             which = ""
-        viols_template_file = 'viols_%stemplate.rst' % which
+            hilo = list(num_viols.keys())[0][-2:]
+        viols_template_file = 'viols_%s%stemplate.rst' % (hilo, which)
 
         viols_template = open(os.path.join('templates', viols_template_file)).read()
         viols_template = re.sub(r' %}\n', ' %}', viols_template)
@@ -87,16 +89,27 @@ class TrackACISViols(object):
         return viols, plot_data
 
     def _find_viols(self, msid):
-        num_viols = {"Planning": 0, "Yellow": 0}
+        limit_types = list(limits[msid][0])
+        num_viols = defaultdict(int)
         viols = []
         msid_times = self.ds[msid].times.value
         msid_vals = self.ds[msid].value
-        for ltype in ["Planning", "Yellow"]:
+        for ltype in limit_types:
             limit_vals = np.zeros(msid_vals.size)
             for lim in limits[msid]:
                 lim_start = date2secs(lim["start"])
                 limit_vals[msid_times >= lim_start] = lim[ltype]
-            bad = np.concatenate(([False], msid_vals >= limit_vals, [False]))
+            if ltype.endswith("lo"):
+                op = np.less_equal
+                reduce = np.min
+                redkey = "mintemp"
+            elif ltype.endswith("hi"):
+                op = np.greater_equal
+                reduce = np.max
+                redkey = "maxtemp"
+            else:
+                raise RuntimeError("Invalid limit type!")
+            bad = np.concatenate(([False], op(msid_vals, limit_vals), [False]))
             changes = np.flatnonzero(bad[1:] != bad[:-1]).reshape(-1, 2)
             for change in changes:
                 duration = msid_times[change[1] - 1] - msid_times[change[0]]
@@ -104,7 +117,7 @@ class TrackACISViols(object):
                     continue
                 viol = {'viol_tstart': msid_times[change[0]],
                         'viol_tstop': msid_times[change[1] - 1],
-                        'maxtemp': msid_vals[change[0]:change[1]].max(),
+                        redkey: reduce(msid_vals[change[0]:change[1]]),
                         'limit': limit_vals[change[0]],
                         'type': ltype}
                 viol["viol_datestart"] = secs2date(viol["viol_tstart"])
@@ -169,6 +182,12 @@ class TrackACISViols(object):
     def _make_plots(self, msid, viols):
         lim_types = list(limits[msid][0].keys())
         lim_types.remove("start")
+        if msid == "fptemp_11":
+            hilo = "hi"
+            redkey = "maxtemp"
+        else:
+            hilo = lim_types[0][-2:]
+            redkey = "mintemp" if hilo == "lo" else "maxtemp"
         doys = defaultdict(list)
         diffs = defaultdict(list)
         durations = defaultdict(list)
@@ -179,7 +198,7 @@ class TrackACISViols(object):
                                     "%Y:%j:%H:%M:%S").timetuple().tm_yday
             dp = acispy.DatePlot(self.ds, msid, figsize=(11, 8), field2=("states", "pitch"))
             doys[viol["type"]].append(doy)
-            diffs[viol["type"]].append(viol["maxtemp"]-viol["limit"])
+            diffs[viol["type"]].append(np.abs(viol[redkey]-viol["limit"]))
             durations[viol["type"]].append(viol["duration"])
             if msid == "fptemp_11":
                 otime = viol["tstop"]-viol["tstart"]
@@ -200,10 +219,10 @@ class TrackACISViols(object):
                 for lim in limits[msid]:
                     lim_start = date2secs(lim["start"])
                     if viol["viol_tstart"] >= lim_start:
-                        plimit = lim["Planning"]
-                        ylimit = lim["Yellow"]
-                dp.add_hline(plimit, ls='-', color=colors["Planning"])
-                dp.add_hline(ylimit, ls='-', color=colors["Yellow"])
+                        plimit = lim["Planning_%s" % hilo]
+                        ylimit = lim["Yellow_%s" % hilo]
+                dp.add_hline(plimit, ls='-', color=colors["Planning_%s" % hilo])
+                dp.add_hline(ylimit, ls='-', color=colors["Yellow_%s" % hilo])
                 otime = viol["viol_tstop"]-viol["viol_tstart"]
                 plot_tbegin = viol["viol_tstart"]-otime
                 plot_tend = viol["viol_tstop"]+otime
@@ -241,17 +260,25 @@ class TrackACISViols(object):
         else:
             nbins = max_doys // 7
         bins = np.linspace(1, max_doys, nbins)
-        for k in lim_types:
-            ax.hist(doys[k], bins=bins, cumulative=True, histtype='step',
+        for key in lim_types:
+            if msid == "fptemp_11":
+                k = key
+            else:
+                k = key[-3:]
+            ax.hist(doys[key], bins=bins, cumulative=True, histtype='step',
                     lw=3, label=k, color=colors[k])
         ax.set_xlim(1, max_doys)
         ax.set_xlabel("DOY")
         ax.set_ylabel("# of violations")
         ax.legend(loc=2)
         ax2 = fig.add_subplot(132)
-        for k in doys:
-            if len(doys[k]) > 0:
-                ax2.scatter(doys[k], diffs[k], marker='x',
+        for key in doys:
+            if len(doys[key]) > 0:
+                if msid == "fptemp_11":
+                    k = key
+                else:
+                    k = key[-3:]
+                ax2.scatter(doys[key], diffs[key], marker='x',
                             color=colors[k])
         ax2.set_xlim(1, max_doys)
         ax2.set_xlabel("DOY")
@@ -259,9 +286,13 @@ class TrackACISViols(object):
         _, ymax = ax2.get_ylim()
         ax2.set_ylim(0.0, max(1.5, ymax))
         ax3 = fig.add_subplot(133)
-        for k in doys:
-            if len(doys[k]) > 0:
-                ax3.scatter(doys[k], durations[k], marker='x',
+        for key in doys:
+            if len(doys[key]) > 0:
+                if msid == "fptemp_11":
+                    k = key
+                else:
+                    k = key[-3:]
+                ax3.scatter(doys[key], durations[key], marker='x',
                             color=colors[k])
         ax3.set_xlim(1, max_doys)
         ax3.set_xlabel("DOY")
@@ -293,6 +324,10 @@ class TrackACISViols(object):
                     new_viols = vtimes > old_time+100.0
                     if new_viols.any():
                         vtypes = tuple(np.char.lower(np.unique(vtypes[new_viols])))
+                        if vtypes[0].startswith("acis"):
+                            reduce = "max"
+                        else:
+                            reduce = "max" if vtypes[0].endswith("hi") else "min"
                         vlimits = repr(vtypes).strip("('')")
                         if 'acis' in vlimits:
                             vlimits = vlimits.upper()
@@ -301,7 +336,7 @@ class TrackACISViols(object):
                         email_txt += "New violations of the {} {} limit(s) " \
                                      "have occurred.<br>\n\n".format(MSID, vlimits)
                         email_txt += "<font face='Menlo, monospace'>"
-                        email_txt += "Type     Start                 Stop                  Max Temp Duration<br>\n"
+                        email_txt += "Type     Start                 Stop                  %s Temp Duration<br>\n" % reduce.capitalize()
                         email_txt += "-------- --------------------- --------------------- -------- --------<br>\n"
                         new_viol_idxs = np.where(new_viols)[0]
                         for idx in new_viol_idxs:
@@ -309,12 +344,12 @@ class TrackACISViols(object):
                             if viol["type"].startswith("acis"):
                                 vtype = viol["type"].upper()
                             else:
-                                vtype = viol["type"].capitalize()
+                                vtype = viol["type"][-3:].capitalize()
                             email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}<br>\n".format(vtype,
-                                                                                   viol["viol_datestart"],
-                                                                                   viol["viol_datestop"],
-                                                                                   viol["maxtemp"],
-                                                                                   viol["duration"])
+                                                                                       viol["viol_datestart"],
+                                                                                       viol["viol_datestop"],
+                                                                                       viol["%stemp" % reduce],
+                                                                                       viol["duration"])
                         email_txt += "-------- --------------------- --------------------- -------- --------</font>\n\n"
                         url = "http://cxc.cfa.harvard.edu/acis/acis_viols_tracking/%s/viols_%s.html" % (self.now.year,
                                                                                                         msid)
@@ -393,9 +428,9 @@ def make_combined_plots(plot_data):
         dates = defaultdict(list)
         diffs = defaultdict(list)
         durations = defaultdict(list)
+        lim_types = list(limits[msid][0].keys())
+        lim_types.remove("start")
         for year in plot_data.keys():
-            lim_types = list(limits[msid][0].keys())
-            lim_types.remove("start")
             year_doys = plot_data[year][msid][0]
             year_diffs = plot_data[year][msid][1]
             year_durations = plot_data[year][msid][2]
@@ -408,8 +443,12 @@ def make_combined_plots(plot_data):
         plt.rc("font", size=14)
         fig = plt.figure(figsize=(16, 5))
         ax = fig.add_subplot(131)
-        for k in lim_types:
-            ax.hist(dates[k], bins=bins, cumulative=True, histtype='step',
+        for key in lim_types:
+            if msid == "fptemp_11":
+                k = key
+            else:
+                k = key[-3:]
+            ax.hist(dates[key], bins=bins, cumulative=True, histtype='step',
                     lw=3, label=k, color=colors[k])
         ax.xaxis_date()
         ax.set_xlabel("Date")
@@ -420,9 +459,13 @@ def make_combined_plots(plot_data):
         ax.xaxis.set_major_formatter(years_fmt)
         ax2 = fig.add_subplot(132)
         ax2.xaxis_date()
-        for k in lim_types:
-            if len(dates[k]) > 0:
-                ax2.scatter(num2date(dates[k]), diffs[k], marker='x', 
+        for key in lim_types:
+            if len(dates[key]) > 0:
+                if msid == "fptemp_11":
+                    k = key
+                else:
+                    k = key[-3:]
+                ax2.scatter(num2date(dates[key]), diffs[key], marker='x',
                             color=colors[k])
         ax2.set_xlabel("Date")
         ax2.set_ylabel(r"$\mathrm{\Delta{T}\ (^\circ{C})}$")
@@ -432,9 +475,13 @@ def make_combined_plots(plot_data):
         ax2.set_ylim(0.0, max(1.5, ymax))
         ax3 = fig.add_subplot(133)
         ax3.xaxis_date()
-        for k in lim_types:
-            if len(dates[k]) > 0:
-                ax3.scatter(num2date(dates[k]), durations[k], marker='x', 
+        for key in lim_types:
+            if len(dates[key]) > 0:
+                if msid == "fptemp_11":
+                    k = key
+                else:
+                    k = key[-3:]
+                ax3.scatter(num2date(dates[key]), durations[key], marker='x',
                             color=colors[k])
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Duration (ks)")
