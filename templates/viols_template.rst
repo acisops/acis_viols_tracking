@@ -1,8 +1,8 @@
 {{year}} {{msid}} Violations
-----------------------------
+--------------------------------
 
 {{msid}} Planning Limit Violations
-==================================
+========================================
 
 Planning High Limit
 +++++++++++++++++++
@@ -39,7 +39,7 @@ Date start             Date stop              Min temperature     Duration (ks) 
 {% endif %}
 
 {{msid}} Yellow Limit Violations
-================================
+======================================
 
 Yellow High Limit
 +++++++++++++++++
