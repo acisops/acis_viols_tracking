@@ -338,10 +338,10 @@ class TrackACISViols(object):
                         new_viol_idxs = np.where(new_viols)[0]
                         for idx in new_viol_idxs:
                             viol = viols[msid][idx]
-                            if viol["type"].startswith("acis"):
+                            if viol["type"].lower().startswith("acis"):
                                 vtype = viol["type"].upper()
                             else:
-                                vtype = viol["type"][-3:].capitalize()
+                                vtype = viol["type"][:-3].capitalize()
                             email_txt += "{:8} {:21} {:21} {:.2f} {:.2f}<br>\n".format(vtype,
                                                                                        viol["viol_datestart"],
                                                                                        viol["viol_datestop"],
