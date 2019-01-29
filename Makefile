@@ -29,8 +29,12 @@ all_clean: clean source_clean
 .PHONY: source_clean
 source_clean:
 	rm -rf source/_static/*.png
-	rm -rf source/20*
-	rm -rf source/index.rst
+	rm -rf source/1deamzt
+	rm -rf source/1dpamzt
+	rm -rf source/1pdeaat
+	rm -rf source/1pdeaat
+	rm -rf source/fptemp_11
+	rm -rf source/tmp*
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

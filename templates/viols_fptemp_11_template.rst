@@ -39,7 +39,9 @@ Violation Trends
 ================
 
 {% if viols|length > 0 %}
-.. image:: ../_static/hist_{{msid.lower()}}_{{year}}.png
+.. image:: ../../_static/hist_{{msid.lower()}}_{{year}}.png
 {% else %}
 No violations in this period available for plotting.
 {% endif %}
+
+This page was last updated at {{last_update}}.

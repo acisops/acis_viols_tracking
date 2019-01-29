@@ -58,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ACIS Temperature Violations Tracking'
-copyright = '2018, John ZuHone'
+copyright = '2019, CXC ACIS Operations'
 author = 'John ZuHone'
 
 # The version info for the project you're documenting, acts as replacement for

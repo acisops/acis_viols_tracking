@@ -3,15 +3,41 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-ACIS Temperature Violations Tracking
-====================================
+{{msid}} Violations Tracking
+===================================
+
+High Violations
+---------------
+
+{% if hilo == "hi" %}
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   {% for year in years %}{{year}}/index
-   {% endfor %}long_term
-      
-This page was last updated at {{last_update}} UTC.
+   {% for year in years %}{{year}}/viols_hi
+   {% endfor %}long_term_hi
+
+{% else %}
+
+No high violations are currently reported for {{msid|upper}}.
+
+{% endif %}
+
+Low Violations
+--------------
+
+{% if hilo == "lo" %}
+
+.. toctree::
+   :maxdepth: 1
+
+   {% for year in years %}{{year}}/viols_lo
+   {% endfor %}long_term_lo
+
+{% else %}
+
+No low violations are currently reported for {{msid|upper}}.
+
+{% endif %}
 
 
