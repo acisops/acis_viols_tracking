@@ -15,10 +15,28 @@ Main Temperatures
 FEP and BEP Temperatures
 ------------------------
 
+FEP0 Temperatures
++++++++++++++++++
+
 .. toctree::
    :maxdepth: 1
 
-   tmp_fep1_mong/index
-   tmp_fep1_actel/index
-   tmp_bep_pcb/index
+   tmp_fep0_fb/index
 
+FEP1 Temperatures
++++++++++++++++++
+
+.. toctree::
+   :maxdepth: 1
+
+   tmp_fep1_actel/index
+   tmp_fep1_fb/index
+   tmp_fep1_mong/index
+
+BEP Temperatures
+++++++++++++++++
+
+.. toctree::
+   :maxdepth: 1
+
+   tmp_bep_pcb/index
