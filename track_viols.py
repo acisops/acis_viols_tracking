@@ -253,8 +253,8 @@ class TrackACISViols(object):
             dp.set_title(title)
             plot_idxs = np.logical_and(dp.times["msids", msid].value >= plot_tbegin,
                                        dp.times["msids", msid].value <= plot_tend)
-            ymax = dp.y["msids", msid][plot_idxs].value.max()+1.0
-            ymin = dp.y["msids", msid][plot_idxs].value.min()-1.0
+            ymax = np.nanmax(dp.y["msids", msid][plot_idxs].value)+1.0
+            ymin = np.nanmin(dp.y["msids", msid][plot_idxs].value)-1.0
             dp.set_ylim(ymin, ymax)
             if msid == "fptemp_11":
                 fn = "%s_%s_%d.png" % (msid, self.year, i)
@@ -324,7 +324,7 @@ class TrackACISViols(object):
                 f.close()
             else:
                 last_known_viols = {}
-            if len(viols[msid]) == 0 or last_known_viols[msid] is None:
+            if len(viols[msid]) == 0 or last_known_viols.get(msid, None) is None:
                 pass
             else:
                 old_time = date2secs(last_known_viols[msid])
