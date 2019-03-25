@@ -21,7 +21,9 @@ FEP0 Temperatures
 .. toctree::
    :maxdepth: 1
 
+   tmp_fep0_actel/index
    tmp_fep0_fb/index
+   tmp_fep0_mong/index
 
 FEP1 Temperatures
 +++++++++++++++++
@@ -39,4 +41,5 @@ BEP Temperatures
 .. toctree::
    :maxdepth: 1
 
+   tmp_bep_osc/index
    tmp_bep_pcb/index
