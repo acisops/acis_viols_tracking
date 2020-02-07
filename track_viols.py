@@ -134,7 +134,7 @@ class TrackACISViols(object):
                     continue
                 viol = {'viol_tstart': msid_times[change[0]],
                         'viol_tstop': msid_times[change[1] - 1],
-                        redkey: reduce(msid_vals[change[0]:change[1]]),
+                        redkey: float(reduce(msid_vals[change[0]:change[1]])),
                         'limit': limit_vals[change[0]],
                         'type': ltype}
                 viol["viol_datestart"] = secs2date(viol["viol_tstart"])
@@ -184,9 +184,9 @@ class TrackACISViols(object):
                                 "datestart": secs2date(tbegin_clock),
                                 "datestop": secs2date(tend_clock),
                                 "type": instr[0],
-                                "time_data": msid_times[idxs],
-                                "temp_data": msid_vals[idxs]}
-                        viol["maxtemp"] = viol["temp_data"][change[0]:change[1]].max()
+                                "time_data": msid_times[idxs].tolist(),
+                                "temp_data": msid_vals[idxs].tolist()}
+                        viol["maxtemp"] = float(np.max(viol["temp_data"][change[0]:change[1]]))
                         viol['viol_tstart'] = viol["time_data"][change[0]]
                         viol['viol_tstop'] = viol["time_data"][change[1] - 1]
                         viol["viol_datestart"] = secs2date(viol["viol_tstart"])
@@ -407,20 +407,31 @@ class TrackACISViols(object):
             f.write(template.render(**context))
 
 
-def make_and_run_tracker(end=None):
+def make_and_run_tracker(year, end_year):
+    if not os.path.exists("source/_static"):
+        os.mkdir("source/_static")
     plot_data = {}
     viols = {}
-    viols_tracker = TrackACISViols(end=end)
+    viols_tracker = TrackACISViols(end=year)
     for msid in temps:
-        if msid == "fptemp_11":
-            hilo = "hi"
+        plot_data_json = os.path.join("source/_static",
+                                      "{}_{}_plot_data.json".format(msid, year))
+        if year != end_year and os.path.exists(plot_data_json):
+            with open(plot_data_json, "r") as f:
+                plot_data[msid] = json.load(f)
         else:
-            lim_types = list(limits[msid][0])
-            lim_types.remove("start")
-            hilo = lim_types[0][-2:]
-        viols[msid], plot_data[msid] = viols_tracker.find_viols(msid, hilo)
-        viols_tracker.check_for_new_viols(msid, hilo, viols)
-        viols_tracker.make_index(msid, hilo)
+            if msid == "fptemp_11":
+                hilo = "hi"
+            else:
+                lim_types = list(limits[msid][0])
+                lim_types.remove("start")
+                hilo = lim_types[0][-2:]
+            viols[msid], plot_data[msid] = viols_tracker.find_viols(msid, hilo)
+            if year != end_year:
+                with open(plot_data_json, "w") as f:
+                    json.dump(plot_data[msid], f, sort_keys=True, indent=4)
+            viols_tracker.check_for_new_viols(msid, hilo, viols)
+            viols_tracker.make_index(msid, hilo)
     return plot_data
 
 
@@ -548,7 +559,7 @@ if __name__ == "__main__":
         end_year = args.end_year
     years = range(args.start_year, end_year+1)
     for year in years:
-        plot_data[year] = make_and_run_tracker(end=year)
+        plot_data[year] = make_and_run_tracker(year, end_year)
     make_combined_plots(plot_data)
     make_long_term()
 
