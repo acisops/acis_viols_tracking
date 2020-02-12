@@ -16,7 +16,7 @@ help:
 
 .PHONY: deploy
 deploy: 
-	rm -rf /proj/web-cxc-dmz/htdocs/acis/acis_viols_tracking
+	rm -rf /proj/web-cxc/htdocs/acis/acis_viols_tracking
 	cp -rf build/html /proj/web-cxc/htdocs/acis/acis_viols_tracking
 
 .PHONY: track
