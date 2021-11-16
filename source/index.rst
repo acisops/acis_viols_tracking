@@ -11,6 +11,8 @@ Main Temperatures
    1deamzt/index
    1pdeaat/index
    fptemp_11/index
+   1crat/index
+   1crbt/index
 
 FEP and BEP Temperatures
 ------------------------

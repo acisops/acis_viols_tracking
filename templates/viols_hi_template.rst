@@ -1,6 +1,7 @@
 {{year}} {{msid}} High Violations
 --------------------------------------------
 
+{% if plan %}
 {{msid}} Planning High Limit Violations
 =============================================
 
@@ -16,6 +17,7 @@ Date start             Date stop              Max temperature     Duration (ks) 
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  ===================
+{% endif %}
 {% endif %}
 
 {{msid}} Yellow High Limit Violations

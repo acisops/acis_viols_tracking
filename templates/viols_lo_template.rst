@@ -1,6 +1,7 @@
 {{year}} {{msid}} Low Violations
 ------------------------------------------
 
+{% if plan %}
 {{msid}} Planning Low Limit Violations
 ==============================================
 
@@ -16,6 +17,7 @@ Date start             Date stop              Min temperature     Duration (ks) 
 {% endif %}
 {% endfor %}
 =====================  =====================  ==================  =============  ===================
+{% endif %}
 {% endif %}
 
 {{msid}} Yellow Low Limit Violations

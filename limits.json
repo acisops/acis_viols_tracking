@@ -1,53 +1,162 @@
 {
-  "1dpamzt": [{"start": "2016:001:00:00:00",
-               "Planning_hi": 35.5,
-               "Yellow_hi": 37.5},
-              {"start": "2018:219:15:00:00",
-               "Planning_hi": 36.5,
-               "Yellow_hi": 38.5},
-	      {"start": "2019:172:00:00:00",
-	       "Planning_hi": 37.5,
-	       "Yellow_hi": 39.5}],
-  "1deamzt": [{"start": "2016:001:00:00:00",
-               "Planning_hi": 35.5,
-               "Yellow_hi": 37.5},
-	      {"start": "2019:305:00:00:00",
-               "Planning_hi": 36.5,
-               "Yellow_hi": 38.5}],
-  "1pdeaat": [{"start": "2016:001:00:00:00",
-               "Planning_hi": 52.5,
-               "Yellow_hi": 57.0}],
-  "fptemp_11": [{"start": "2016:001:00:00:00",
-                 "ACIS-I": -114.0,
-                 "ACIS-S": -114.0},
-                {"start": "2016:109:09:43:56",
-                 "ACIS-I": -114.0,
-                 "ACIS-S": -112.0},
-	        {"start": "2019:172:00:00:00",
-		 "ACIS-I": -112.0,
-		 "ACIS-S": -111.0}],
-  "tmp_bep_osc": [{"start": "2016:001:00:00:00",
-                   "Planning_lo": 8.5,
-                   "Yellow_lo": 6.5}],
-  "tmp_bep_pcb": [{"start": "2016:001:00:00:00",
-                   "Planning_lo": 8.5,
-                   "Yellow_lo": 6.5}],
-  "tmp_fep0_actel": [{"start": "2016:001:00:00:00",
-                      "Planning_lo": 2.0,
-                      "Yellow_lo": 0.0}],
-  "tmp_fep0_fb": [{"start": "2016:001:00:00:00",
-                   "Planning_lo": 2.0,
-                   "Yellow_lo": 0.0}],
-  "tmp_fep0_mong": [{"start": "2016:001:00:00:00",
-                    "Planning_lo": 2.0,
-                    "Yellow_lo": 0.0}],
-  "tmp_fep1_actel": [{"start": "2016:001:00:00:00",
-                      "Planning_lo": 2.0,
-                      "Yellow_lo": 0.0}],
-  "tmp_fep1_fb": [{"start": "2016:001:00:00:00",
-                   "Planning_lo": 2.0,
-                   "Yellow_lo": 0.0}],
-  "tmp_fep1_mong": [{"start": "2016:001:00:00:00",
-                    "Planning_lo": 2.0,
-                    "Yellow_lo": 0.0}]
+  "1dpamzt": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Planning_hi": 35.5,
+	  "Yellow_hi": 37.5, 
+	  "zero_feps": -999.0
+      },
+      {
+	  "start": "2018:219:15:00:00",
+	  "Planning_hi": 36.5,
+	  "Yellow_hi": 38.5,
+	  "zero_feps": -999.0
+      },
+      {
+	  "start": "2019:172:00:00:00",
+	  "Planning_hi": 37.5,
+	  "Yellow_hi": 39.5,
+	  "zero_feps": -999.0
+      },
+      {
+          "start": "2021:004:00:00:00",
+          "Planning_hi": 37.5,
+          "Yellow_hi": 39.5,
+          "zero_feps": 12.0
+      }
+  ],
+  "1deamzt": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Planning_hi": 35.5,
+	  "Yellow_hi": 37.5
+      },
+      {
+	  "start": "2019:305:00:00:00",
+	  "Planning_hi": 36.5,
+	  "Yellow_hi": 38.5
+      },
+      {
+	  "start": "2021:004:00:00:00",
+	  "Planning_hi": 37.5,
+	  "Yellow_hi": 39.5
+      }
+  ],
+  "1pdeaat": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Planning_hi": 52.5,
+	  "Yellow_hi": 57.0
+      }
+  ],
+  "fptemp_11": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "ACIS-I": -114.0,
+	  "ACIS-S": -114.0,
+	  "ACIS-H": 999.0,
+	  "Planning_hi": 999.0,
+	  "Yellow_hi": 999.0
+      },
+      {
+	  "start": "2016:109:09:43:56",
+	  "ACIS-I": -114.0,
+	  "ACIS-S": -112.0,
+	  "ACIS-H": 999.0,
+	  "Planning_hi": 999.0,
+	  "Yellow_hi": 999.0
+      },
+      {
+	  "start": "2019:172:00:00:00",
+	  "ACIS-I": -112.0,
+	  "ACIS-S": -111.0,
+	  "ACIS-H": 999.0,
+	  "Planning_hi": 999.0,
+	  "Yellow_hi": 999.0
+      },
+      {
+          "start": "2021:098:00:00:00",
+          "ACIS-I": -112.0,
+          "ACIS-S": -111.0,
+	  "ACIS-H": 999.0,
+          "Planning_hi": -80.0,
+	  "Yellow_hi": -84.0
+      },
+      {
+          "start": "2021:299:00:00:00",
+          "ACIS-I": -112.0,
+          "ACIS-S": -111.0,
+          "ACIS-H": -109.0,
+          "Planning_hi": -80.0,
+          "Yellow_hi": -84.0
+      }
+  ],
+  "tmp_bep_osc": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Planning_lo": 8.5,
+	  "Yellow_lo": 6.5
+      }
+  ],
+  "tmp_bep_pcb": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Planning_lo": 8.5,
+	  "Yellow_lo": 6.5
+      }
+  ],
+  "tmp_fep0_actel": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Planning_lo": 2.0,
+	  "Yellow_lo": 0.0
+      }
+  ],
+  "tmp_fep0_fb": [
+      {
+	  "start": "2016:001:00:00:00",
+          "Planning_lo": 2.0,
+          "Yellow_lo": 0.0
+      }
+  ],
+  "tmp_fep0_mong": [
+      {
+	  "start": "2016:001:00:00:00",
+          "Planning_lo": 2.0,
+          "Yellow_lo": 0.0
+      }
+  ],
+  "tmp_fep1_actel": [
+      {
+	  "start": "2016:001:00:00:00",
+          "Planning_lo": 2.0,
+          "Yellow_lo": 0.0
+      }
+  ],
+  "tmp_fep1_fb": [
+      {
+	  "start": "2016:001:00:00:00",
+          "Planning_lo": 2.0,
+          "Yellow_lo": 0.0
+      }
+  ],
+  "tmp_fep1_mong": [
+      {
+	  "start": "2016:001:00:00:00",
+          "Planning_lo": 2.0,
+          "Yellow_lo": 0.0
+      }
+  ],
+  "1crat": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Yellow_hi": -90.0
+      }
+  ],
+  "1crbt": [
+      {
+	  "start": "2016:001:00:00:00",
+	  "Yellow_hi": -90.0
+      }
+  ]
 }
